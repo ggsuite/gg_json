@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add .gitattributes file
+
 ### Changed
 
 - BREAKING CHANGE: GgJson has been moved to gg\_direct\_json lib and needs to be replaced by DirectJson

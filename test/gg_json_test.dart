@@ -69,30 +69,42 @@ void main() {
         group('writes the value into json', () {
           test('- with an empty json', () {
             const json = '{}';
-            final result =
-                ggJson.writeString(json: json, path: 'a/b', value: 1);
+            final result = ggJson.writeString(
+              json: json,
+              path: 'a/b',
+              value: 1,
+            );
             expect(result, '{"a":{"b":1}}');
           });
 
           test('- with an empty string', () {
             const json = '';
-            final result =
-                ggJson.writeString(json: json, path: 'a/b', value: 1);
+            final result = ggJson.writeString(
+              json: json,
+              path: 'a/b',
+              value: 1,
+            );
             expect(result, '{"a":{"b":1}}');
           });
 
           test('- with an existing value', () {
             const json = '{"a":{"b":1}}';
-            final result =
-                ggJson.writeString(json: json, path: 'a/c', value: 2);
+            final result = ggJson.writeString(
+              json: json,
+              path: 'a/c',
+              value: 2,
+            );
             expect(result, '{"a":{"b":1,"c":2}}');
           });
 
           test('- with prettyPrint', () {
             const json = '{"a":{"b":1}}';
             const ggJson = GgJson(prettyPrint: true);
-            final result =
-                ggJson.writeString(json: json, path: 'a/c', value: 2);
+            final result = ggJson.writeString(
+              json: json,
+              path: 'a/c',
+              value: 2,
+            );
 
             expect(result, prettyPrintResult);
           });
@@ -119,8 +131,11 @@ void main() {
         group('writes the value into the file', () {
           test('- with an empty file', () async {
             await file.writeAsString('');
-            final result0 =
-                await ggJson.writeFile(file: file, path: 'a/b', value: 1);
+            final result0 = await ggJson.writeFile(
+              file: file,
+              path: 'a/b',
+              value: 1,
+            );
             final result1 = await file.readAsString();
             expect(result0, result1);
             expect(result1, '{"a":{"b":1}}');
@@ -137,8 +152,11 @@ void main() {
         group('throws', () {
           test('- when the file is not existing', () async {
             final file = File('not_existing_file.json');
-            final result =
-                await ggJson.writeFile(file: file, path: 'a/b', value: 1);
+            final result = await ggJson.writeFile(
+              file: file,
+              path: 'a/b',
+              value: 1,
+            );
             expect(result, '{"a":{"b":1}}');
           });
         });
@@ -152,10 +170,7 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
-            final result = ggJson.read<int>(
-              json: json,
-              path: ['a', 'b'],
-            );
+            final result = ggJson.read<int>(json: json, path: ['a', 'b']);
             expect(result, 1);
           });
 
@@ -163,10 +178,7 @@ void main() {
             final json = <String, dynamic>{
               'a': {'b': 1},
             };
-            final result = ggJson.read<int>(
-              json: json,
-              path: ['a', 'c'],
-            );
+            final result = ggJson.read<int>(json: json, path: ['a', 'c']);
             expect(result, isNull);
           });
         });
@@ -177,10 +189,7 @@ void main() {
               'a': {'b': 1},
             };
             expect(
-              () => ggJson.read<String>(
-                json: json,
-                path: ['a', 'b'],
-              ),
+              () => ggJson.read<String>(json: json, path: ['a', 'b']),
               throwsA(
                 isA<Exception>().having(
                   (e) => e.toString(),
@@ -266,9 +275,7 @@ void main() {
               'a': {'b': 1},
             };
             ggJson.remove(json: json, path: ['a', 'b']);
-            expect(json, {
-              'a': <String, dynamic>{},
-            });
+            expect(json, {'a': <String, dynamic>{}});
           });
 
           test('- with a non-existing value', () {

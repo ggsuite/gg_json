@@ -8,8 +8,10 @@ import 'dart:convert';
 import 'dart:io';
 
 /// Easily read and write values to and from JSON documents.
-@Deprecated('Please execute `dart pub add gg_direct_json` and replace '
-    '`GgJson` by `DirectJson`')
+@Deprecated(
+  'Please execute `dart pub add gg_direct_json` and replace '
+  '`GgJson` by `DirectJson`',
+)
 class GgJson {
   /// Constructor.
   const GgJson({this.prettyPrint = false});
@@ -27,10 +29,9 @@ class GgJson {
     required Map<String, dynamic> json,
     required Iterable<String> path,
     required T value,
-  }) =>
-      _write<T>(json, path, value);
+  }) => _write<T>(json, path, value);
 
-// ...........................................................................
+  // ...........................................................................
   /// Writes a value into a JSON document.
   ///
   /// - If the path does not exist, it will be created.
@@ -41,8 +42,9 @@ class GgJson {
     required String path,
     required T value,
   }) {
-    final Map<String, dynamic> jsonMap =
-        json.isEmpty ? {} : jsonDecode(json) as Map<String, dynamic>;
+    final Map<String, dynamic> jsonMap = json.isEmpty
+        ? {}
+        : jsonDecode(json) as Map<String, dynamic>;
 
     _write<T>(jsonMap, path.split('/'), value);
     final result = _encoder.convert(jsonMap);
@@ -78,8 +80,7 @@ class GgJson {
   T? read<T>({
     required Map<String, dynamic> json,
     required Iterable<String> path,
-  }) =>
-      _read<T>(json, path);
+  }) => _read<T>(json, path);
 
   // ...........................................................................
   /// Reads a value from a JSON file
@@ -87,10 +88,7 @@ class GgJson {
   /// - Returns null if the value is not found.
   /// - Throws when value is not of type [T].
   /// - Throws when the file does not exist.
-  Future<T?> readFile<T>({
-    required File file,
-    required String path,
-  }) async {
+  Future<T?> readFile<T>({required File file, required String path}) async {
     var json = await file.readAsString();
     if (json.isEmpty) {
       json = '{}';
@@ -103,10 +101,7 @@ class GgJson {
   ///
   /// - Returns null if the value is not found.
   /// - Throws when value is not of type [T].
-  T? readString<T>({
-    required String json,
-    required String path,
-  }) {
+  T? readString<T>({required String json, required String path}) {
     final Map<String, dynamic> jsonMap =
         jsonDecode(json) as Map<String, dynamic>;
 
@@ -122,15 +117,11 @@ class GgJson {
   void remove({
     required Map<String, dynamic> json,
     required Iterable<String> path,
-  }) =>
-      _remove(json, path);
+  }) => _remove(json, path);
 
   // ...........................................................................
   /// Removes a value from a JSON document.
-  String removeFromString({
-    required String json,
-    required String path,
-  }) {
+  String removeFromString({required String json, required String path}) {
     final Map<String, dynamic> jsonMap =
         jsonDecode(json) as Map<String, dynamic>;
 
@@ -182,11 +173,7 @@ class GgJson {
   }
 
   // ...........................................................................
-  void _write<T>(
-    Map<String, dynamic> json,
-    Iterable<String> path,
-    T value,
-  ) {
+  void _write<T>(Map<String, dynamic> json, Iterable<String> path, T value) {
     _checkType<T>(json, path);
 
     Map<String, dynamic> node = json;
@@ -226,10 +213,7 @@ class GgJson {
   }
 
   // ...........................................................................
-  void _checkType<T>(
-    Map<String, dynamic> json,
-    Iterable<String> path,
-  ) {
+  void _checkType<T>(Map<String, dynamic> json, Iterable<String> path) {
     _read<T>(json, path); // Will throw if existing value has a different type.
   }
 }
