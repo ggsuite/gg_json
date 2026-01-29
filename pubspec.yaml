@@ -1,6 +1,6 @@
 name: gg_json
 description: gg_json offers a bunch of JSON helpers used in various context.
-version: 3.0.3
+version: 3.0.4
 repository: https://github.com/inlavigo/gg_json.git
 
 environment:
