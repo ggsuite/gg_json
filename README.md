@@ -1,19 +1,45 @@
 # gg_json
 
-The `gg_json` package is a versatile tool designed for ease of use when
-working with JSON files, allowing users to effortlessly write or read values.
+`gg_json` offers small, composable helpers for working with JSON-like `Map<String, dynamic>` structures in Dart. It focuses on utility functions that make it easier to copy, inspect, and share JSON payloads across tests, tooling, and Flutter/Dart applications.
 
-By simply providing a path formatted as `a/b/c/value`, the package automatically
-structures the data into a nested JSON format:
+## Features
 
-```json
-{
-  "a": { "b": { "c": "value" } }
-}
+- Deep-copy JSON maps and lists while preserving nested structure.
+- Access a curated `exampleJson` payload for demos, tests, or docs.
+- Lightweight: no hidden dependencies beyond the Dart SDK.
+
+## Install
+
+Add the package to your project:
+
+```sh
+dart pub add gg_json
 ```
 
-This intuitive path-based approach streamlines the process of manipulating JSON
-data, making it accessible for both reading and writing operations. Users can
-navigate through the nested structure with ease, enabling efficient data
-retrieval or modification with minimal code, enhancing productivity and reducing
-complexity in handling JSON files.
+Import the helpers where you need them:
+
+```dart
+import 'package:gg_json/gg_json.dart';
+```
+
+## Usage
+
+Deep copy a JSON map
+
+```dart
+import 'package:gg_json/gg_json.dart';
+
+void main() {
+  final data = {
+    'user': {'name': 'Ada', 'skills': ['math', 'logic']},
+    'active': true,
+  };
+
+  final clone = deepCopy(data);
+  clone['user']?['skills']?.add('computing');
+
+  // Original data remains untouched.
+  print(data['user']?['skills']); // [math, logic]
+  print(clone['user']?['skills']); // [math, logic, computing]
+}
+```
