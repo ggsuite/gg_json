@@ -6,4 +6,7 @@
 
 library;
 
-export 'src/gg_json.dart';
+export 'src/deep_copy.dart';
+export 'src/deep_equals.dart';
+export 'src/is_json_value.dart';
+export 'src/json.dart';

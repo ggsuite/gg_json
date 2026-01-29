@@ -6,15 +6,7 @@
 
   "configurations": [
     {
-      "name": "gg_json.dart",
-      "type": "dart",
-      "request": "launch",
-      "program": "${workspaceFolder}/example/gg_json_example.dart",
-      "args": ["--param", "value"],
-      "console": "debugConsole"
-    },
-    {
-      "name": "Current File",
+      "name": "Test Current File",
       "type": "dart",
       "request": "launch",
       "program": "${file}"
