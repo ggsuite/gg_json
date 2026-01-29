@@ -12,7 +12,7 @@ void main() {
   group('Json', () {
     group('exampleJson', () {
       test('should work', () {
-        const json = exampleJson;
+        const json = exampleJsonNested1;
         expect(
           json,
           deepJsonContains({

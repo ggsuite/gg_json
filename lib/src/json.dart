@@ -7,8 +7,56 @@
 /// Shortcut for a JSON object
 typedef Json = Map<String, dynamic>;
 
+/// The example JSON document.
+const exampleJson = exampleJsonNested0;
+
+// .............................................................................
+/// A complex JSON document combining various structures and types.
+const exampleJsonNested0 = <String, dynamic>{
+  'objectValue': <String, dynamic>{
+    'nestedString': 'nested',
+    'nestedNull': null,
+    'nestedBoolean': true,
+  },
+  'arrayValue': [
+    'text',
+    123,
+    45.6,
+    true,
+    false,
+    null,
+    <String, dynamic>{'deepKey': 'deepValue'},
+    [
+      1,
+      2,
+      3,
+      {'innerKey': 'innerValue'},
+    ],
+  ],
+  'numericVariants': <String, num>{
+    'positive': 100,
+    'negative': -50,
+    'floating': 0.001,
+    'scientific': 1.0e6,
+  },
+  'emptyObject': <String, dynamic>{},
+  'emptyArray': <dynamic>[],
+};
+
+// .............................................................................
+/// A JSON document demonstrating various primitive types.
+const exampleJsonPrimitive = <String, dynamic>{
+  'stringValue': 'Hello, World',
+  'integerValue': 42,
+  'doubleValue': 3.14159,
+  'booleanTrue': true,
+  'booleanFalse': false,
+  'nullValue': null,
+};
+
+// .............................................................................
 /// An example JSON document.
-const exampleJson = <String, dynamic>{
+const exampleJsonNested1 = <String, dynamic>{
   'name': 'John Doe',
   'age': 30,
   'isEmployed': true,

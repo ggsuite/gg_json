@@ -41,7 +41,7 @@ void main() {
       expect(isJsonValue({'key': Object()}), isFalse);
       expect(isJsonValue([1, 2, Object()]), isFalse);
 
-      final example = deepCopy(exampleJson);
+      final example = deepCopy(exampleJsonNested1);
       example['groups'][0] = Object();
       expect(isJsonValue(example), isFalse);
     });

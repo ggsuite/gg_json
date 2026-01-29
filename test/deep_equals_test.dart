@@ -13,14 +13,32 @@ void main() {
     late Json jsonB;
 
     setUp(() {
-      jsonA = deepCopy(exampleJson);
-      jsonB = deepCopy(exampleJson);
+      jsonA = deepCopy(exampleJsonNested1);
+      jsonB = deepCopy(exampleJsonNested1);
     });
 
     group('result', () {
       test('returns true for JSON with same content', () {
         final result = deeplEquals(jsonA, jsonB);
+
         expect(result, isTrue);
+
+        expect(deeplEquals(deepCopy(exampleJson), exampleJson), isTrue);
+
+        expect(
+          deeplEquals(deepCopy(exampleJsonNested0), exampleJsonNested0),
+          isTrue,
+        );
+
+        expect(
+          deeplEquals(deepCopy(exampleJsonNested1), exampleJsonNested1),
+          isTrue,
+        );
+
+        expect(
+          deeplEquals(deepCopy(exampleJsonPrimitive), exampleJsonPrimitive),
+          isTrue,
+        );
       });
 
       group('returns false for different JSON', () {

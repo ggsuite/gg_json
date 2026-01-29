@@ -11,11 +11,12 @@ import 'package:test/test.dart';
 
 void main() {
   group('DeepCopy', () {
-    test('example JSON deep copy', () {
-      final result = deepCopy(exampleJson);
-
+    test('example JSON', () {
       // Verify that the result is equal to the original example JSON
-      expect(result, exampleJson);
+      expect(deepCopy(exampleJson), exampleJson);
+      expect(deepCopy(exampleJsonNested0), exampleJsonNested0);
+      expect(deepCopy(exampleJsonNested1), exampleJsonNested1);
+      expect(deepCopy(exampleJsonPrimitive), exampleJsonPrimitive);
     });
   });
 }
