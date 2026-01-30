@@ -53,8 +53,10 @@ class DirectJson {
 
   // ...........................................................................
   /// Write a value into the json
-  void set<T>(String path, T value) =>
-      write(path: path.split(RegExp('[./]')), value: value);
+  void set<T>(String path, T value) => write(
+    path: path.split(RegExp('[./]'))..removeWhere((e) => e.isEmpty),
+    value: value,
+  );
 
   // ...........................................................................
   /// Writes a value into a JSON document.

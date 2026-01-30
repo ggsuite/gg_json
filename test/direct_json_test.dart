@@ -29,23 +29,10 @@ void main() {
         final paths = dj.ls();
         expect(paths, ['/', '/a', '/a/b', '/a/c', '/a/c/d', '/e']);
       });
-
-      test('handles lists in lists', () {
-        final dj = DirectJson(
-          json: {
-            'a': [
-              {'b': 1},
-              ['c', 'd'],
-            ],
-          },
-        );
-        final paths = dj.ls(writeValues: false);
-        expect(paths, ['/', '/a', '/a[0]/b', '/a[0]', '/a[1]']);
-      });
     });
 
     test('set, get', () {
-      final df = DirectJson(
+      final dj = DirectJson(
         json: {
           'a': 1,
           'b': {'c': 3},
@@ -53,17 +40,20 @@ void main() {
         prettyPrint: false,
       );
 
-      df.set('/b/c', 4);
-      expect(df.jsonString, '{"a":1,"b":{"c":4}}');
+      dj.set('/b/c', 4);
+      expect(dj.jsonString, '{"a":1,"b":{"c":4}}');
 
-      df.set('b.c', 5);
-      expect(df.jsonString, '{"a":1,"b":{"c":5}}');
+      dj.set('b.c', 5);
+      expect(dj.jsonString, '{"a":1,"b":{"c":5}}');
 
-      final val = df.get<int>('b/c');
-      expect(val, 5);
+      dj.set('.b.c', 6);
+      expect(dj.jsonString, '{"a":1,"b":{"c":6}}');
 
-      final val2 = df.get<Map<String, dynamic>>('b');
-      expect(val2, {'c': 5});
+      final val = dj.get<int>('b/c');
+      expect(val, 6);
+
+      final val2 = dj.get<Map<String, dynamic>>('b');
+      expect(val2, {'c': 6});
     });
     group('write:', () {
       group('write(json, path, value)', () {

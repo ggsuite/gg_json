@@ -18,7 +18,7 @@ extension JsonObjectPaths on Json {
     final result = <List<String>>[
       [separator],
     ];
-    _ls(
+    jsonLs(
       this,
       result,
       [''],
@@ -31,7 +31,8 @@ extension JsonObjectPaths on Json {
 }
 
 // ...........................................................................
-void _ls(
+/// List all paths in a JSON object
+void jsonLs(
   Map<String, dynamic> json,
   List<List<String>> paths,
   List<String> parent, {
@@ -51,7 +52,7 @@ void _ls(
     // Handle maps
     if (val is Map<String, dynamic>) {
       paths.add(child);
-      _ls(
+      jsonLs(
         val,
         paths,
         child,
@@ -90,7 +91,7 @@ void _lsList(
 
     // Handle map in list
     if (val[i] is Map<String, dynamic>) {
-      _ls(
+      jsonLs(
         val[i] as Map<String, dynamic>,
         paths,
         path,
