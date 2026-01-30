@@ -35,13 +35,14 @@ String jsonStringSet<T>(
   required String path,
   required T value,
   bool prettyPrint = false,
+  bool extend = true,
 }) {
   json = json.trim();
   if (json.isEmpty) {
     json = '{}';
   }
   final parsed = jsonDecode(json) as Json;
-  parsed.add<T>(path, value);
+  parsed.set<T>(path, value, extend: extend);
   return prettyPrint
       ? const JsonEncoder.withIndent('  ').convert(parsed)
       : jsonEncode(parsed);

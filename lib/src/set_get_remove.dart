@@ -10,172 +10,178 @@ import 'package:gg_json/gg_json.dart';
 extension JsonGetSetRemove on Json {
   // ...........................................................................
   /// Adds a value at [path] in the JSON object.
-  /// If the path does not exist, it will be created.
-  Json add<T>(String path, T value) =>
-      jsonAdd(json: this, path: path, value: value);
-
-  /// Adds a value at [path] in the JSON object.
   /// If the path does not exist, an exception is thrown.
-  Json set<T>(String path, T value) =>
-      jsonSet(json: this, path: path, value: value);
+  Json set<T>(String path, T value, {bool extend = false}) =>
+      _Set<T>(json: this, path: path, value: value, extend: extend).result;
 
   /// Read a value from the JSON object.
   /// Returns null if the path does not exist.
-  T? getOrNull<T>(String path) => jsonGetOrNull<T>(this, path);
+  T? getOrNull<T>(String path) => _jsonGetOrNull<T>(this, path);
 
   /// Read a value from the JSON object.
   /// Throws when the path does not exist
   /// or an existing value is not of type [T].
-  T get<T>(String path) => jsonGet<T>(this, path);
+  T get<T>(String path) => _jsonGet<T>(this, path);
 
   /// Removes a value from the JSON object.
-  void removeValue(String path) => jsonRemoveByArray(this, parseJsonPath(path));
+  void removeValue(String path) =>
+      _jsonRemoveByArray(this, parseJsonPath(path));
 }
 
 // .............................................................................
-/// Write a value into the json.
-/// If the path does not exist, it will be created.
-Json jsonAdd<T>({required Json json, required String path, required T value}) =>
-    jsonAddByArray(json: json, path: parseJsonPath(path), value: value);
+class _Set<T> {
+  _Set({
+    required this.json,
+    required this.path,
+    required this.value,
+    required this.extend,
+  }) : segments = parseJsonPath(path);
 
-/// Write a value into the json.
-/// If the path does not exist, an exception is thrown.
-Json jsonSet<T>({required Json json, required String path, required T value}) {
-  return jsonAddByArray(
-    json: json,
-    path: parseJsonPath(path),
-    value: value,
-    throwWhenPathMissing: true,
-  );
-}
+  final Json json;
+  final String path;
+  final List<String> segments;
+  final T value;
+  final bool extend;
 
-// .............................................................................
-/// Write a value into the json
-Json jsonAddByArray<T>({
-  required Json json,
-  required List<String> path,
-  required T value,
-  bool throwWhenPathMissing = false,
-}) {
-  // Iterate all keys in the JSON
-  final currentSegment = path.first;
-  final (segmentName, indices) = parseArrayIndex(currentSegment);
+  // ...........................................................................
+  Json get result => _calc(path: segments, json: json);
 
-  // Is the last segment? Set value.
-  if (path.length == 1 && indices.isEmpty) {
-    final existing = json[segmentName];
-    _throwWhenMissing(segmentName, existing, throwWhenPathMissing);
-    _checkTypes(segmentName, json[segmentName], value);
-    json[segmentName] = value;
-    return json;
-  }
+  // ...........................................................................
+  /// Write a value into the json
+  Json _calc({required List<String> path, required Json json}) {
+    // Iterate all keys in the JSON
+    final currentSegment = path.first;
+    final (segmentName, indices) = parseArrayIndex(currentSegment);
 
-  // No array indices?
-
-  // If indices are not empty
-  if (indices.isEmpty) {
-    final existing = json[segmentName];
-    _throwWhenMissing(segmentName, existing, throwWhenPathMissing);
-
-    final child = json[segmentName] ??= Json();
-
-    // If value is not a map, throw an exception
-    if (child is! Json) {
-      throw Exception(
-        'Segment "$segmentName" is of type "${child.runtimeType}". '
-        'Map expected.',
-      );
+    // Is the last segment? Set value.
+    if (path.length == 1 && indices.isEmpty) {
+      final existing = json[segmentName];
+      _throwWhenMissing(segmentName, existing);
+      _checkTypes(segmentName, json[segmentName], value);
+      json[segmentName] = value;
+      return json;
     }
 
-    // Process next path segment
-    if (path.length > 1) {
+    // No array indices?
+
+    // If indices are not empty
+    if (indices.isEmpty) {
+      final existing = json[segmentName];
+      _throwWhenMissing(segmentName, existing);
+
+      final child = json[segmentName] ??= Json();
+
+      // If value is not a map, throw an exception
+      if (child is! Json) {
+        throw Exception(
+          'Segment "$segmentName" is of type "${child.runtimeType}". '
+          'Map expected.',
+        );
+      }
+
+      // Process next path segment
+      if (path.length > 1) {
+        final subPath = path.sublist(1);
+        _calc(json: child, path: subPath);
+      }
+    }
+    // Handle arrays
+    else if (indices.isNotEmpty) {
+      // Make sure value is a list
+      final existing = json[segmentName];
+      _throwWhenMissing(segmentName, existing);
+      var child = json[segmentName] ??= <dynamic>[];
+      dynamic parent = json;
+
+      // If value is not a list, throw an exception
+      if (child is! List) {
+        throw Exception('Segment "$currentSegment" is not a list item.');
+      }
+
+      // Create sub arrays
+      var i = 0;
+      var last = indices.length - 1;
+      for (final index in indices) {
+        // Add missing items
+        final missingItems = index + 1 - (child as List).length;
+        if (missingItems > 0) {
+          child = [...child, ...List<dynamic>.filled(missingItems, null)];
+          if (i == 0) {
+            parent[segmentName] = child;
+          } else {
+            parent[indices.elementAt(i - 1)] = child;
+          }
+        }
+
+        // Add initial object
+        final existing = child[index];
+        _throwWhenMissing(segmentName, existing);
+        parent = child;
+
+        if (i == last) {
+          if (path.length == 1) {
+            _checkTypes(segmentName, child[index], value);
+            child[index] = value;
+            return json;
+          } else {
+            child = child[index] ??= <String, dynamic>{};
+          }
+        } else {
+          child = child[index] ??= <dynamic>[];
+        }
+
+        i++;
+      }
+
+      // Process next path segment
       final subPath = path.sublist(1);
-      jsonAddByArray<T>(
-        json: child,
-        path: subPath,
-        value: value,
-        throwWhenPathMissing: throwWhenPathMissing,
+      _calc(json: child as Json, path: subPath);
+    }
+
+    return json; // coverage:ignore-line
+  }
+
+  void _throwWhenMissing(String key, dynamic existing) {
+    if (!extend && existing == null) {
+      throw Exception(
+        [
+          'Path segment "$key" of "$path" does not exist.',
+          '',
+          'Available paths:',
+          ...json.ls(linePrefix: '  - '),
+        ].join('\n'),
       );
     }
   }
-  // Handle arrays
-  else if (indices.isNotEmpty) {
-    // Make sure value is a list
-    final existing = json[segmentName];
-    _throwWhenMissing(segmentName, existing, throwWhenPathMissing);
-    var child = json[segmentName] ??= <dynamic>[];
-    dynamic parent = json;
-
-    // If value is not a list, throw an exception
-    if (child is! List) {
-      throw Exception('Segment "$currentSegment" is not a list item.');
-    }
-
-    // Create sub arrays
-    var i = 0;
-    var last = indices.length - 1;
-    for (final index in indices) {
-      // Add missing items
-      final missingItems = index + 1 - (child as List).length;
-      if (missingItems > 0) {
-        child = [...child, ...List<dynamic>.filled(missingItems, null)];
-        if (i == 0) {
-          parent[segmentName] = child;
-        } else {
-          parent[indices.elementAt(i - 1)] = child;
-        }
-      }
-
-      // Add initial object
-      final existing = child[index];
-      _throwWhenMissing(segmentName, existing, throwWhenPathMissing);
-      parent = child;
-
-      if (i == last) {
-        if (path.length == 1) {
-          _checkTypes(segmentName, child[index], value);
-          child[index] = value;
-          return json;
-        } else {
-          child = child[index] ??= <String, dynamic>{};
-        }
-      } else {
-        child = child[index] ??= <dynamic>[];
-      }
-
-      i++;
-    }
-
-    // Process next path segment
-
-    final subPath = path.sublist(1);
-    jsonAddByArray<T>(
-      json: child as Json,
-      path: subPath,
-      value: value,
-      throwWhenPathMissing: throwWhenPathMissing,
-    );
-  }
-
-  return json; // coverage:ignore-line
 }
 
 /// Returns a value from the json by path. Returns null if not found.
-T? jsonGetOrNull<T>(Json json, String path) =>
-    jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
+T? _jsonGetOrNull<T>(Json json, String path) =>
+    _jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
 
 /// Returns a value from the json by path. Throws if not found.
-T jsonGet<T>(Json json, String path) {
-  final val = jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
+T _jsonGet<T>(Json json, String path) {
+  final val = _jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
   if (val == null) {
-    throw Exception('Value at path "$path" not found.');
+    throw Exception(
+      [
+        'Value at path "$path" not found.',
+        '',
+        'Available paths:',
+        ...json.ls(linePrefix: '  - '),
+      ].join('\n'),
+    );
   }
   return val;
 }
 
-// ...........................................................................
+// .............................................................................
 /// Returns a value from the json by path array
-T? jsonGetByArrayOrNull<T>(Json json, List<String> path) {
+T? _jsonGetByArrayOrNull<T>(Json json, List<String> path) {
+  if (path.isEmpty) {
+    return json as T?;
+  }
+
   // Iterate all keys in the JSON
   final currentSegment = path.first;
   final (segmentName, indices) = parseArrayIndex(currentSegment);
@@ -211,7 +217,7 @@ T? jsonGetByArrayOrNull<T>(Json json, List<String> path) {
     // Process next path segment
     if (path.length > 1) {
       final subPath = path.sublist(1);
-      return jsonGetByArrayOrNull<T>(child, subPath);
+      return _jsonGetByArrayOrNull<T>(child, subPath);
     }
   }
   // Handle arrays
@@ -260,15 +266,15 @@ T? jsonGetByArrayOrNull<T>(Json json, List<String> path) {
 
     // Process next path segment
     final subPath = path.sublist(1);
-    return jsonGetByArrayOrNull<T>(child as Json, subPath);
+    return _jsonGetByArrayOrNull<T>(child as Json, subPath);
   }
 
   return null;
 }
 
-// ...........................................................................
+// .............................................................................
 /// Removes a value from the JSON document.
-void jsonRemoveByArray(Json doc, Iterable<String> path) {
+void _jsonRemoveByArray(Json doc, Iterable<String> path) {
   var node = doc;
   for (int i = 0; i < path.length; i++) {
     final pathSegment = path.elementAt(i);
@@ -284,6 +290,7 @@ void jsonRemoveByArray(Json doc, Iterable<String> path) {
   }
 }
 
+// .............................................................................
 /// Throws when [existing] and [newElement] are of different types.
 void _checkTypes(String key, dynamic existing, dynamic newElement) {
   if (existing == null) {
@@ -295,15 +302,5 @@ void _checkTypes(String key, dynamic existing, dynamic newElement) {
       'Cannot write key "$key": ${existing.runtimeType} != '
       '${newElement.runtimeType}.',
     );
-  }
-}
-
-void _throwWhenMissing(
-  String key,
-  dynamic existing,
-  bool throwWhenPathMissing,
-) {
-  if (throwWhenPathMissing && existing == null) {
-    throw Exception('Path segment "$key" does not exist.');
   }
 }

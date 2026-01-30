@@ -14,11 +14,12 @@ extension JsonObjectPaths on Json {
     bool writeValues = false,
     Pattern? exclude,
     String separator = '/',
+    String linePrefix = '',
   }) {
     final result = <List<String>>[
       [separator],
     ];
-    jsonLs(
+    _jsonLs(
       this,
       result,
       [''],
@@ -26,13 +27,17 @@ extension JsonObjectPaths on Json {
       exclude: exclude,
       separator: separator,
     );
-    return result.map((e) => e.join(separator)).toList();
+
+    return result
+        .map((e) => e.join(separator))
+        .map((e) => '$linePrefix$e')
+        .toList();
   }
 }
 
 // ...........................................................................
 /// List all paths in a JSON object
-void jsonLs(
+void _jsonLs(
   Map<String, dynamic> json,
   List<List<String>> paths,
   List<String> parent, {
@@ -52,7 +57,7 @@ void jsonLs(
     // Handle maps
     if (val is Map<String, dynamic>) {
       paths.add(child);
-      jsonLs(
+      _jsonLs(
         val,
         paths,
         child,
@@ -91,7 +96,7 @@ void _lsList(
 
     // Handle map in list
     if (val[i] is Map<String, dynamic>) {
-      jsonLs(
+      _jsonLs(
         val[i] as Map<String, dynamic>,
         paths,
         path,

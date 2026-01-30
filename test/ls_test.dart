@@ -63,6 +63,13 @@ void main() {
             ]),
           );
         });
+
+        test('with line prefix', () {
+          expect({'a': 10}.ls(writeValues: true, linePrefix: '>> '), [
+            '>> /',
+            '>> /a = 10',
+          ]);
+        });
       });
 
       group('without including values', () {

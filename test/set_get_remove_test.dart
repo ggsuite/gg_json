@@ -15,12 +15,12 @@ void main() {
   });
 
   group('JsonGetSetRemove', () {
-    group('json.add(json, path, value)', () {
+    group('json.set(json, path, value)', () {
       group('creates missing path elements', () {
         test('with an empty base object', () {
           final json = <String, dynamic>{};
 
-          json.add('/a/b/c', 1);
+          json.set('/a/b/c', 1, extend: true);
           expect(json, {
             'a': {
               'b': {'c': 1},
@@ -34,7 +34,7 @@ void main() {
               'b': {'c': 1},
             },
           };
-          json.add('a/b/d', 2);
+          json.set('a/b/d', 2, extend: true);
           expect(
             json,
             deepCopy({
@@ -52,12 +52,11 @@ void main() {
             },
           });
 
-          json.add('d/e', [
+          json.set('d/e', [
             [1, 2],
             [3, 4],
             {'f': 5},
-          ]);
-
+          ], extend: true);
           expect(json, {
             'a': {
               'b': {'c': 1, 'd': 2},
@@ -81,7 +80,7 @@ void main() {
             ],
           };
 
-          json.add<int>('e[3][2]', 66);
+          json.set<int>('e[3][2]', 66, extend: true);
           expect(json, {
             'e': [
               [10, 20],
@@ -100,7 +99,7 @@ void main() {
 
         var message = '';
         try {
-          json.add<String>('a/b', '2');
+          json.set<String>('a/b', '2');
         } catch (e) {
           message = (e as dynamic).message.toString();
         }
@@ -113,7 +112,7 @@ void main() {
 
         var message = '';
         try {
-          json.add<int>('e/a', 70);
+          json.set<int>('e/a', 70);
         } catch (e) {
           message = (e as dynamic).message.toString();
         }
@@ -128,16 +127,14 @@ void main() {
 
         var message = '';
         try {
-          json.add<int>('a[0]', 2);
+          json.set<int>('a[0]', 2);
         } catch (e) {
           message = (e as dynamic).message.toString();
         }
 
         expect(message, 'Segment "a[0]" is not a list item.');
       });
-    });
 
-    group('json.set(json, path, value)', () {
       test('updates existing path elements', () {
         final json = <String, dynamic>{
           'a': {
@@ -251,14 +248,21 @@ void main() {
           'a': {'b': 1},
         };
 
-        var message = '';
+        var message = <String>[];
         try {
           json.set<int>('a/c', 2);
         } catch (e) {
-          message = (e as dynamic).message.toString();
+          message = ((e as dynamic).message as String).split('\n');
         }
 
-        expect(message, 'Path segment "c" does not exist.');
+        expect(message, [
+          'Path segment "c" of "a/c" does not exist.',
+          '',
+          'Available paths:',
+          '  - /',
+          '  - /a',
+          '  - /a/b',
+        ]);
       });
     });
 
@@ -275,6 +279,19 @@ void main() {
     });
 
     group('json.get(json, path)', () {
+      test('read the object itself using /', () {
+        final json = <String, dynamic>{
+          'a': 1,
+          'b': {'c': 2},
+        };
+
+        final val = json.get<Json>('/');
+        expect(val, {
+          'a': 1,
+          'b': {'c': 2},
+        });
+      });
+
       group('allows to read values', () {
         test('with existing path', () {
           final json = <String, dynamic>{
@@ -330,14 +347,22 @@ void main() {
           'b': {'c': 3},
         };
 
-        var message = '';
+        var message = <String>[];
         try {
           json.get<int>('b/d');
         } catch (e) {
-          message = (e as dynamic).message.toString();
+          message = ((e as dynamic).message as String).split('\n');
         }
 
-        expect(message, 'Value at path "b/d" not found.');
+        expect(message, [
+          'Value at path "b/d" not found.',
+          '',
+          'Available paths:',
+          '  - /',
+          '  - /a',
+          '  - /b',
+          '  - /b/c',
+        ]);
       });
 
       test('throws when value is of unexpected type', () {

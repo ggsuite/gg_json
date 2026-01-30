@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.5] - 2026-01-30
+
+### Changed
+
+- Print paths when wrong path is given
+- Print all paths when a path is not found
+
 ## [3.0.4] - 2026-01-30
 
 ### Added
@@ -38,6 +45,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.0.5]: https://github.com/inlavigo/gg_json/compare/3.0.4...3.0.5
 [3.0.4]: https://github.com/inlavigo/gg_json/compare/3.0.3...3.0.4
 [3.0.3]: https://github.com/inlavigo/gg_json/compare/3.0.2...3.0.3
 [3.0.2]: https://github.com/inlavigo/gg_json/compare/3.0.1...3.0.2
