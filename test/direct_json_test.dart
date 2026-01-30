@@ -27,7 +27,7 @@ void main() {
           },
         );
         final paths = dj.ls();
-        expect(paths, ['/', '/a', '/a/b = 1', '/a/c', '/a/c/d = 2', '/e = 3']);
+        expect(paths, ['/', '/a', '/a/b', '/a/c', '/a/c/d', '/e']);
       });
 
       test('handles lists in lists', () {
@@ -245,7 +245,7 @@ void main() {
       });
     });
 
-    group('remove', () {
+    group('remove, removeFromString', () {
       group('remove(json, path)', () {
         group('removes the value from json', () {
           test('- with an existing value', () {
@@ -255,6 +255,13 @@ void main() {
             final directJson = DirectJson(json: json);
             directJson.remove(path: ['a', 'b']);
             expect(json, {'a': <String, dynamic>{}});
+
+            final jsonStr = directJson.jsonString;
+            final jsonStrOut = DirectJson.removeFromString(
+              json: jsonStr,
+              path: '/a/b',
+            );
+            expect(jsonStrOut, '{"a":{}}');
           });
 
           test('- with a non-existing value', () {

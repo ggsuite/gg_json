@@ -36,7 +36,7 @@ class DirectJson {
   // ...........................................................................
   /// Lists all paths in a JSON document
   List<String> ls({
-    bool writeValues = true,
+    bool writeValues = false,
     Pattern? exclude,
     String separator = '/',
   }) {
@@ -113,6 +113,19 @@ class DirectJson {
   // ...........................................................................
   /// Removes a value from a JSON document.
   void remove({required Iterable<String> path}) => _remove(json, path);
+
+  // ...........................................................................
+  /// Removes a value from a JSON document.
+  static String removeFromString({
+    required String json,
+    required String path,
+    bool prettyPrint = false,
+  }) {
+    final Json jsonMap = jsonDecode(json) as Json;
+
+    _remove(jsonMap, path.split('/'));
+    return _encoder(prettyPrint).convert(jsonMap);
+  }
 
   // ...........................................................................
   /// Is the JSON document pretty printed?

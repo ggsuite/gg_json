@@ -11,7 +11,7 @@ extension JsonObjectPaths on Json {
   // ...........................................................................
   /// Lists all paths in the JSON object.
   List<String> ls({
-    bool writeValues = true,
+    bool writeValues = false,
     Pattern? exclude,
     String separator = '/',
   }) {

@@ -12,14 +12,14 @@ void main() {
     group('returns a list of all paths in the JSON document', () {
       group('with including values', () {
         test('with simple object', () {
-          expect({'a': 10}.ls(), ['/', '/a = 10']);
+          expect({'a': 10}.ls(writeValues: true), ['/', '/a = 10']);
         });
 
         test('with nested object', () {
           expect(
             {
               'a': {'b': 10},
-            }.ls(),
+            }.ls(writeValues: true),
             ['/', '/a', '/a/b = 10'],
           );
         });
@@ -28,7 +28,7 @@ void main() {
           expect(
             {
               'a': [10, 20],
-            }.ls(),
+            }.ls(writeValues: true),
             ['/', '/a', '/a[0] = 10', '/a[1] = 20'],
           );
         });
@@ -40,13 +40,13 @@ void main() {
                 {'b': 10},
                 {'c': 20},
               ],
-            }.ls(),
+            }.ls(writeValues: true),
             ['/', '/a', '/a[0]/b = 10', '/a[1]/c = 20'],
           );
         });
 
         test('with complex exampleJsonNested0', () {
-          final paths = exampleJsonNested0.ls();
+          final paths = exampleJsonNested0.ls(writeValues: true);
           expect(
             paths,
             containsAll(<String>[
@@ -185,7 +185,7 @@ void main() {
           'c': {'b_exclude': 3},
         };
 
-        final paths = json.ls(exclude: RegExp('exclude'));
+        final paths = json.ls(writeValues: true, exclude: RegExp('exclude'));
 
         expect(paths, ['/', '/a = 1', '/c']);
       });
