@@ -5,7 +5,8 @@
 // found in the LICENSE file in the root of this package.
 
 import 'dart:convert';
-import 'dart:io';
+
+import 'package:gg_json/gg_json.dart';
 
 /// Easily read and write values directly to and from JSON documents.
 class DirectJson {
@@ -19,11 +20,11 @@ class DirectJson {
     Pattern? exclude,
   }) => DirectJson(
     prettyPrint: prettyPrint,
-    json: json.isEmpty ? {} : jsonDecode(json) as Map<String, dynamic>,
+    json: json.isEmpty ? {} : jsonDecode(json) as Json,
   );
 
   /// The underlying JSON document.
-  final Map<String, dynamic> json;
+  final Json json;
 
   /// The JSON document as a string.
   String get jsonString => _encoder(prettyPrint).convert(json);
@@ -39,18 +40,11 @@ class DirectJson {
     Pattern? exclude,
     String separator = '/',
   }) {
-    final result = <List<String>>[
-      [separator],
-    ];
-    _ls(
-      json,
-      result,
-      [''],
+    return json.ls(
       writeValues: writeValues,
       exclude: exclude,
       separator: separator,
     );
-    return result.map((e) => e.join(separator)).toList();
   }
 
   // ######################
@@ -107,8 +101,7 @@ class DirectJson {
   /// - Returns null if the value is not found.
   /// - Throws when value is not of type [T].
   static T? readString<T>({required String json, required String path}) {
-    final Map<String, dynamic> jsonMap =
-        jsonDecode(json) as Map<String, dynamic>;
+    final Json jsonMap = jsonDecode(json) as Json;
 
     return _read<T>(jsonMap, path.split('/'));
   }
@@ -122,32 +115,6 @@ class DirectJson {
   void remove({required Iterable<String> path}) => _remove(json, path);
 
   // ...........................................................................
-  /// Removes a value from a JSON document.
-  static String removeFromString({
-    required String json,
-    required String path,
-    bool prettyPrint = false,
-  }) {
-    final Map<String, dynamic> jsonMap =
-        jsonDecode(json) as Map<String, dynamic>;
-
-    _remove(jsonMap, path.split('/'));
-    return _encoder(prettyPrint).convert(jsonMap);
-  }
-
-  // ...........................................................................
-  /// Removes a value from a JSON file.
-  static Future<String> removeFromFile({
-    required File file,
-    required String path,
-  }) async {
-    final json = await file.readAsString();
-    final result = removeFromString(json: json, path: path);
-    await file.writeAsString(result);
-    return result;
-  }
-
-  // ...........................................................................
   /// Is the JSON document pretty printed?
   final bool prettyPrint;
 
@@ -159,7 +126,7 @@ class DirectJson {
       prettyPrint ? const JsonEncoder.withIndent('  ') : const JsonEncoder();
 
   // ...........................................................................
-  static T? _read<T>(Map<String, dynamic> json, Iterable<String> path) {
+  static T? _read<T>(Json json, Iterable<String> path) {
     var node = json;
     for (var i = 0; i < path.length; i++) {
       final pathSegment = path.elementAt(i);
@@ -173,21 +140,17 @@ class DirectJson {
         }
         return node[pathSegment] as T;
       }
-      node = node[pathSegment] as Map<String, dynamic>;
+      node = node[pathSegment] as Json;
     }
 
     return null;
   }
 
   // ...........................................................................
-  static void _write<T>(
-    Map<String, dynamic> json,
-    Iterable<String> path,
-    T value,
-  ) {
+  static void _write<T>(Json json, Iterable<String> path, T value) {
     _checkType<T>(json, path);
 
-    Map<String, dynamic> node = json;
+    Json node = json;
 
     for (int i = 0; i < path.length; i++) {
       var pathSegment = path.elementAt(i);
@@ -200,7 +163,7 @@ class DirectJson {
         break;
       }
 
-      var childNode = node[pathSegment] as Map<String, dynamic>?;
+      var childNode = node[pathSegment] as Json?;
       if (childNode == null) {
         childNode = {};
         node[pathSegment] = childNode;
@@ -210,7 +173,7 @@ class DirectJson {
   }
 
   // ...........................................................................
-  static void _remove(Map<String, dynamic> doc, Iterable<String> path) {
+  static void _remove(Json doc, Iterable<String> path) {
     var node = doc;
     for (int i = 0; i < path.length; i++) {
       final pathSegment = path.elementAt(i);
@@ -222,111 +185,12 @@ class DirectJson {
         node.remove(pathSegment);
         break;
       }
-      node = node[pathSegment] as Map<String, dynamic>;
+      node = node[pathSegment] as Json;
     }
   }
 
   // ...........................................................................
-  static void _checkType<T>(Map<String, dynamic> json, Iterable<String> path) {
+  static void _checkType<T>(Json json, Iterable<String> path) {
     _read<T>(json, path); // Will throw if existing value has a different type.
-  }
-
-  // ...........................................................................
-  void _ls(
-    Map<String, dynamic> json,
-    List<List<String>> paths,
-    List<String> parent, {
-    required bool writeValues,
-    required Pattern? exclude,
-    required String separator,
-  }) {
-    for (final key in json.keys) {
-      // Exclude keys that match the exclude pattern
-      if (exclude?.allMatches(key).isNotEmpty == true) {
-        continue;
-      }
-
-      final val = json[key];
-      final child = [...parent, key];
-
-      // Handle maps
-      if (val is Map<String, dynamic>) {
-        paths.add(child);
-        _ls(
-          val,
-          paths,
-          child,
-          writeValues: writeValues,
-          exclude: exclude,
-          separator: separator,
-        );
-      }
-      // Handle lists
-      else if (val is List) {
-        paths.add(child);
-        _lsList(
-          val,
-          paths,
-          child,
-          writeValues,
-          exclude,
-          parent,
-          key,
-          separator,
-        );
-      }
-      // Handle other values
-      else {
-        final segment = writeValues ? '$key = $val' : key;
-        paths.add([...parent, segment]);
-      }
-    }
-  }
-
-  // ...........................................................................
-  void _lsList(
-    List<dynamic> val,
-    List<List<String>> paths,
-    List<String> child,
-    bool writeValues,
-    Pattern? exclude,
-    List<String> parent,
-    String key,
-    String separator,
-  ) {
-    for (var i = 0; i < val.length; i++) {
-      final path = [...child];
-      path[path.length - 1] = '$key[$i]';
-
-      // Handle map in list
-      if (val[i] is Map<String, dynamic>) {
-        _ls(
-          val[i] as Map<String, dynamic>,
-          paths,
-          path,
-          writeValues: writeValues,
-          exclude: exclude,
-          separator: separator,
-        );
-      }
-      // Handle list in list
-      else if (val[i] is List) {
-        _lsList(
-          val[i] as List<dynamic>,
-          paths,
-          path,
-          writeValues,
-          exclude,
-          parent,
-          key,
-          separator,
-        );
-      }
-      // Handle other values
-      else {
-        final segment = writeValues ? '$key[$i] = ${val[i]}' : '$key[$i]';
-        paths.add([...parent, segment]);
-      }
-    }
   }
 }

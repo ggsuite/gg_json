@@ -8,12 +8,114 @@ import 'package:gg_json/gg_json.dart';
 
 /// Lists all paths in the example JSON document.
 extension JsonObjectPaths on Json {
+  // ...........................................................................
   /// Lists all paths in the JSON object.
   List<String> ls({
     bool writeValues = true,
     Pattern? exclude,
     String separator = '/',
-  }) => DirectJson(
-    json: this,
-  ).ls(writeValues: writeValues, exclude: exclude, separator: separator);
+  }) {
+    final result = <List<String>>[
+      [separator],
+    ];
+    _ls(
+      this,
+      result,
+      [''],
+      writeValues: writeValues,
+      exclude: exclude,
+      separator: separator,
+    );
+    return result.map((e) => e.join(separator)).toList();
+  }
+}
+
+// ...........................................................................
+void _ls(
+  Map<String, dynamic> json,
+  List<List<String>> paths,
+  List<String> parent, {
+  required bool writeValues,
+  required Pattern? exclude,
+  required String separator,
+}) {
+  for (final key in json.keys) {
+    // Exclude keys that match the exclude pattern
+    if (exclude?.allMatches(key).isNotEmpty == true) {
+      continue;
+    }
+
+    final val = json[key];
+    final child = [...parent, key];
+
+    // Handle maps
+    if (val is Map<String, dynamic>) {
+      paths.add(child);
+      _ls(
+        val,
+        paths,
+        child,
+        writeValues: writeValues,
+        exclude: exclude,
+        separator: separator,
+      );
+    }
+    // Handle lists
+    else if (val is List) {
+      paths.add(child);
+      _lsList(val, paths, child, writeValues, exclude, parent, key, separator);
+    }
+    // Handle other values
+    else {
+      final segment = writeValues ? '$key = $val' : key;
+      paths.add([...parent, segment]);
+    }
+  }
+}
+
+// ...........................................................................
+void _lsList(
+  List<dynamic> val,
+  List<List<String>> paths,
+  List<String> child,
+  bool writeValues,
+  Pattern? exclude,
+  List<String> parent,
+  String key,
+  String separator,
+) {
+  for (var i = 0; i < val.length; i++) {
+    final path = [...child];
+    path[path.length - 1] = '$key[$i]';
+
+    // Handle map in list
+    if (val[i] is Map<String, dynamic>) {
+      _ls(
+        val[i] as Map<String, dynamic>,
+        paths,
+        path,
+        writeValues: writeValues,
+        exclude: exclude,
+        separator: separator,
+      );
+    }
+    // Handle list in list
+    else if (val[i] is List) {
+      _lsList(
+        val[i] as List<dynamic>,
+        paths,
+        path,
+        writeValues,
+        exclude,
+        parent,
+        key,
+        separator,
+      );
+    }
+    // Handle other values
+    else {
+      final segment = writeValues ? '$key[$i] = ${val[i]}' : '$key[$i]';
+      paths.add([...parent, segment]);
+    }
+  }
 }

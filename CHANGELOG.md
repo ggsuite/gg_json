@@ -5,6 +5,7 @@
 ### Added
 
 - Add isValidJsonKey
+- Add ls() methods, add DirectJson()
 
 ## [3.0.3] - 2026-01-29
 

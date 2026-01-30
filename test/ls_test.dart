@@ -177,6 +177,18 @@ void main() {
           );
         });
       });
+
+      test('excludes keys matching the exclude pattern', () {
+        final json = {
+          'a': 1,
+          'b_exclude': 2,
+          'c': {'b_exclude': 3},
+        };
+
+        final paths = json.ls(exclude: RegExp('exclude'));
+
+        expect(paths, ['/', '/a = 1', '/c']);
+      });
     });
   });
 }
