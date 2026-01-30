@@ -8,6 +8,8 @@ library;
 
 export 'src/deep_copy.dart';
 export 'src/deep_equals.dart';
+export 'src/direct_json.dart';
 export 'src/is_json_value.dart';
 export 'src/is_valid_json_key.dart';
 export 'src/json.dart';
+export 'src/ls.dart';
