@@ -56,7 +56,7 @@ void main() {
             message = (e as dynamic).message as String;
           }
 
-          expect(message, 'Existing value 1 is not of type String.');
+          expect(message, 'Cannot write key "b": int != String.');
         });
       });
     });
@@ -86,7 +86,7 @@ void main() {
             message = (e as dynamic).message as String;
           }
 
-          expect(message, 'Existing value 1 is not of type String.');
+          expect(message, 'Cannot get key "b": int != String.');
         });
       });
     });

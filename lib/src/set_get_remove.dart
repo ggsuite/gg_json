@@ -81,7 +81,9 @@ Json jsonAddByArray<T>({
 
     // If value is not a map, throw an exception
     if (child is! Json) {
+      // coverage:ignore-start
       throw Exception('Segment "$segmentName" is not a Map.');
+      // coverage:ignore-end
     }
 
     // Process next path segment
@@ -105,7 +107,9 @@ Json jsonAddByArray<T>({
 
     // If value is not a list, throw an exception
     if (child is! List) {
+      // coverage:ignore-start
       throw Exception('Segment "$segmentName" is not a List.');
+      // coverage:ignore-end
     }
 
     // Create sub arrays
@@ -134,7 +138,7 @@ Json jsonAddByArray<T>({
           child[index] = value;
           return json;
         } else {
-          child[index] ??= <String, dynamic>{};
+          child = child[index] ??= <String, dynamic>{};
         }
       } else {
         child = child[index] ??= <dynamic>[];
@@ -154,8 +158,10 @@ Json jsonAddByArray<T>({
       );
     } else {
       // Set the value
+      // coverage:ignore-start
       _checkTypes(segmentName, (child as Json)[segmentName], value);
       (child)[segmentName] = value;
+      // coverage:ignore-end
     }
   }
 
@@ -177,38 +183,97 @@ T jsonGet<T>(Json json, String path) {
 
 // ...........................................................................
 /// Returns a value from the json by path array
-T? jsonGetByArrayOrNull<T>(Json json, Iterable<String> path) {
-  dynamic node = json;
-  var last = path.length - 1;
-  for (var i = 0; i < path.length; i++) {
-    final pathSegment = path.elementAt(i);
-    final (segmentName, indices) = parseArrayIndex(pathSegment);
+T? jsonGetByArrayOrNull<T>(Json json, List<String> path) {
+  // Iterate all keys in the JSON
+  final currentSegment = path.first;
+  final (segmentName, indices) = parseArrayIndex(currentSegment);
 
-    if (node is Map && !node.containsKey(segmentName)) {
+  // Is the last segment? Return value.
+  if (path.length == 1 && indices.isEmpty) {
+    final existing = json[segmentName];
+    if (existing != null && existing is! T) {
+      throw Exception(
+        'Cannot get key "$segmentName": '
+        '${existing.runtimeType} != $T.',
+      );
+    }
+    return existing as T?;
+  }
+
+  // No array indices?
+
+  // If indices are not empty
+  if (indices.isEmpty) {
+    final existing = json[segmentName];
+    if (existing == null) {
       return null;
-    } else if (node is List<dynamic> && indices.isNotEmpty) {
-      for (final index in indices) {
-        if ((node as List).length <= index) {
-          return null;
-        }
-        node = node[index];
-      }
     }
 
-    if (node is Map) {
-      node = node[segmentName] as dynamic;
+    final child = existing;
+
+    // If value is not a map, throw an exception
+    if (child is! Json) {
+      throw Exception('Segment "$segmentName" is not a Map.');
     }
 
-    if (node is List) {
-      for (final index in indices) {
-        if (index >= (node as List).length) {
-          return null;
-        }
-        node = node[index];
-        if (i == last) {
-          return node as T;
-        }
+    // Process next path segment
+    if (path.length > 1) {
+      final subPath = path.sublist(1);
+      return jsonGetByArrayOrNull<T>(child, subPath);
+    }
+  }
+  // Handle arrays
+  else if (indices.isNotEmpty) {
+    // Make sure value is a list
+    final existing = json[segmentName];
+    if (existing == null) {
+      return null;
+    }
+
+    var child = existing;
+
+    // If value is not a list, throw an exception
+    if (child is! List) {
+      throw Exception('Segment "$segmentName" is not a List.');
+    }
+
+    // Create sub arrays
+    var i = 0;
+    var last = indices.length - 1;
+    for (final index in indices) {
+      // Add missing items
+      final missingItems = index + 1 - (child as List).length;
+      if (missingItems > 0) {
+        return null;
       }
+
+      // Add initial object
+      final existing = child[index];
+      if (existing == null) {
+        return null;
+      }
+
+      if (i == last) {
+        if (path.length == 1) {
+          return existing as T;
+        } else {
+          child = existing;
+        }
+      } else {
+        child = existing;
+      }
+
+      i++;
+    }
+
+    // Process next path segment
+    if (path.length > 1) {
+      final subPath = path.sublist(1);
+      return jsonGetByArrayOrNull<T>(child as Json, subPath);
+    } else {
+      // Set the value
+
+      return child[segmentName] as T;
     }
   }
 

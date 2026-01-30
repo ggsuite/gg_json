@@ -17,7 +17,7 @@ extension JsonStringGetSet on String {
 
   /// Read a value from the JSON object.
   /// Returns null if the path does not exist.
-  T? getJsonValue<T>(String path) => jsonStringGet<T>(this, path: path);
+  T? getJsonValue<T>(String path) => jsonStringGetOrNull<T>(this, path: path);
 
   /// Removes a value from the JSON object.
   String removeJsonValue(String path, {bool prettyPrint = false}) =>
@@ -52,7 +52,7 @@ String jsonStringSet<T>(
 ///
 /// - Returns null if the value is not found.
 /// - Throws when value is not of type [T].
-T? jsonStringGet<T>(String json, {required String path}) {
+T? jsonStringGetOrNull<T>(String json, {required String path}) {
   final parsed = jsonDecode(json) as Json;
   return parsed.getOrNull<T>(path);
 }
