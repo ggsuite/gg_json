@@ -16,39 +16,80 @@ void main() {
 
   group('JsonGetSetRemove', () {
     group('json.add(json, path, value)', () {
-      test('creates missing path elements', () {
-        final json = <String, dynamic>{};
+      group('creates missing path elements', () {
+        test('with an empty base object', () {
+          final json = <String, dynamic>{};
 
-        json.add('/a/b/c', 1);
-        expect(json, {
-          'a': {
-            'b': {'c': 1},
-          },
+          json.add('/a/b/c', 1);
+          expect(json, {
+            'a': {
+              'b': {'c': 1},
+            },
+          });
         });
 
-        json.add('a/b/d', 2);
-        expect(json, {
-          'a': {
-            'b': {'c': 1, 'd': 2},
-          },
+        test('with an pure map object', () {
+          final json = {
+            'a': {
+              'b': {'c': 1},
+            },
+          };
+          json.add('a/b/d', 2);
+          expect(
+            json,
+            deepCopy({
+              'a': {
+                'b': {'c': 1, 'd': 2},
+              },
+            }),
+          );
         });
 
-        json.add('d/e', [
-          [1, 2],
-          [3, 4],
-          {'f': 5},
-        ]);
-        expect(json, {
-          'a': {
-            'b': {'c': 1, 'd': 2},
-          },
-          'd': {
+        test('with an array object', () {
+          final json = deepCopy({
+            'a': {
+              'b': {'c': 1, 'd': 2},
+            },
+          });
+
+          json.add('d/e', [
+            [1, 2],
+            [3, 4],
+            {'f': 5},
+          ]);
+
+          expect(json, {
+            'a': {
+              'b': {'c': 1, 'd': 2},
+            },
+            'd': {
+              'e': [
+                [1, 2],
+                [3, 4],
+                {'f': 5},
+              ],
+            },
+          });
+        });
+
+        test('with an index exceeding the current length', () {
+          final json = <String, dynamic>{
             'e': [
-              [1, 2],
-              [3, 4],
-              {'f': 5},
+              [10, 20],
+              [30, 40],
+              [50, 60],
             ],
-          },
+          };
+
+          json.add<int>('e[3][2]', 66);
+          expect(json, {
+            'e': [
+              [10, 20],
+              [30, 40],
+              [50, 60],
+              [null, null, 66],
+            ],
+          });
         });
       });
 
@@ -64,7 +105,7 @@ void main() {
           message = (e as dynamic).message.toString();
         }
 
-        expect(message, 'Existing value 1 is not of type String.');
+        expect(message, 'Cannot write key "b": int != String.');
       });
     });
 
@@ -111,26 +152,6 @@ void main() {
               [10, 20],
               [30, 55],
               [50, 60],
-            ],
-          });
-        });
-
-        test('with an index exceeding the current length', () {
-          final json = <String, dynamic>{
-            'e': [
-              [10, 20],
-              [30, 40],
-              [50, 60],
-            ],
-          };
-
-          json.add<int>('e[3][2]', 66);
-          expect(json, {
-            'e': [
-              [10, 20],
-              [30, 40],
-              [50, 60],
-              [null, null, 66],
             ],
           });
         });
@@ -194,7 +215,7 @@ void main() {
           message = (e as dynamic).message.toString();
         }
 
-        expect(message, 'Path "a/c" does not exist.');
+        expect(message, 'Path segment "c" does not exist.');
       });
     });
 
