@@ -7,6 +7,10 @@
 - Add isValidJsonKey
 - Add ls() methods, add DirectJson()
 
+### Changed
+
+- Split DirectJson into various other methods
+
 ## [3.0.3] - 2026-01-29
 
 ### Added
