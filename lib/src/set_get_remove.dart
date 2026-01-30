@@ -66,6 +66,20 @@ Json jsonAddByArray<T>({
       continue;
     }
 
+    // Create a child map, when needed
+    if (parent is Map && !parent.containsKey(segmentName)) {
+      parent[segmentName] = indices.isEmpty ? Json() : <dynamic>[];
+    }
+    // Chreate a child lists, when needed
+    else if (parent is List<dynamic> && indices.isNotEmpty) {
+      for (final index in indices) {
+        if ((parent as List).length <= index) {
+          final extendedList =
+        }
+        parent = parent[index];
+      }
+    }
+
     if (i == path.length - 1 && indices.isEmpty) {
       parent[segmentName] = value;
       break;
@@ -126,30 +140,37 @@ T jsonGet<T>(Json json, String path) {
 /// Returns a value from the json by path array
 T? jsonGetByArrayOrNull<T>(Json json, Iterable<String> path) {
   dynamic node = json;
+  var last = path.length - 1;
   for (var i = 0; i < path.length; i++) {
     final pathSegment = path.elementAt(i);
     final (segmentName, indices) = parseArrayIndex(pathSegment);
 
     if (node is Map && !node.containsKey(segmentName)) {
       return null;
+    } else if (node is List<dynamic> && indices.isNotEmpty) {
+      for (final index in indices) {
+        if ((node as List).length <= index) {
+          return null;
+        }
+        node = node[index];
+      }
     }
-    if ((i == path.length - 1)) {
-      var val = node[segmentName];
-      if (val is List<dynamic> && indices.isNotEmpty) {
-        for (final index in indices) {
-          if ((val as List).length <= index) {
-            return null;
-          }
-          val = val[index];
+
+    if (node is Map) {
+      node = node[segmentName] as dynamic;
+    }
+
+    if (node is List) {
+      for (final index in indices) {
+        if (index >= (node as List).length) {
+          return null;
+        }
+        node = node[index];
+        if (i == last) {
+          return node as T;
         }
       }
-
-      if (val is T == false) {
-        throw Exception('Existing value $val is not of type $T.');
-      }
-      return val as T;
     }
-    node = node[segmentName] as dynamic;
   }
 
   return null;
