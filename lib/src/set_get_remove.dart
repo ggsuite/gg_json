@@ -81,9 +81,10 @@ Json jsonAddByArray<T>({
 
     // If value is not a map, throw an exception
     if (child is! Json) {
-      // coverage:ignore-start
-      throw Exception('Segment "$segmentName" is not a Map.');
-      // coverage:ignore-end
+      throw Exception(
+        'Segment "$segmentName" is of type "${child.runtimeType}". '
+        'Map expected.',
+      );
     }
 
     // Process next path segment
@@ -107,9 +108,7 @@ Json jsonAddByArray<T>({
 
     // If value is not a list, throw an exception
     if (child is! List) {
-      // coverage:ignore-start
-      throw Exception('Segment "$segmentName" is not a List.');
-      // coverage:ignore-end
+      throw Exception('Segment "$currentSegment" is not a list item.');
     }
 
     // Create sub arrays
@@ -148,24 +147,17 @@ Json jsonAddByArray<T>({
     }
 
     // Process next path segment
-    if (path.length > 1) {
-      final subPath = path.sublist(1);
-      jsonAddByArray<T>(
-        json: child as Json,
-        path: subPath,
-        value: value,
-        throwWhenPathMissing: throwWhenPathMissing,
-      );
-    } else {
-      // Set the value
-      // coverage:ignore-start
-      _checkTypes(segmentName, (child as Json)[segmentName], value);
-      (child)[segmentName] = value;
-      // coverage:ignore-end
-    }
+
+    final subPath = path.sublist(1);
+    jsonAddByArray<T>(
+      json: child as Json,
+      path: subPath,
+      value: value,
+      throwWhenPathMissing: throwWhenPathMissing,
+    );
   }
 
-  return json;
+  return json; // coverage:ignore-line
 }
 
 /// Returns a value from the json by path. Returns null if not found.
@@ -202,7 +194,7 @@ T? jsonGetByArrayOrNull<T>(Json json, List<String> path) {
 
   // No array indices?
 
-  // If indices are not empty
+  // If indices are  empty
   if (indices.isEmpty) {
     final existing = json[segmentName];
     if (existing == null) {
@@ -234,7 +226,7 @@ T? jsonGetByArrayOrNull<T>(Json json, List<String> path) {
 
     // If value is not a list, throw an exception
     if (child is! List) {
-      throw Exception('Segment "$segmentName" is not a List.');
+      throw Exception('Segment "$segmentName" is not a list item.');
     }
 
     // Create sub arrays
@@ -267,14 +259,8 @@ T? jsonGetByArrayOrNull<T>(Json json, List<String> path) {
     }
 
     // Process next path segment
-    if (path.length > 1) {
-      final subPath = path.sublist(1);
-      return jsonGetByArrayOrNull<T>(child as Json, subPath);
-    } else {
-      // Set the value
-
-      return child[segmentName] as T;
-    }
+    final subPath = path.sublist(1);
+    return jsonGetByArrayOrNull<T>(child as Json, subPath);
   }
 
   return null;

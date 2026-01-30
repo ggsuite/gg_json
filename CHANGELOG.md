@@ -6,6 +6,7 @@
 
 - Add isValidJsonKey
 - Add ls() methods, add DirectJson()
+- Add array manipulation methods
 
 ### Changed
 

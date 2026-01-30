@@ -107,6 +107,34 @@ void main() {
 
         expect(message, 'Cannot write key "b": int != String.');
       });
+
+      test('throws, when array is accessed without index', () {
+        final json = <String, dynamic>{'e': 5};
+
+        var message = '';
+        try {
+          json.add<int>('e/a', 70);
+        } catch (e) {
+          message = (e as dynamic).message.toString();
+        }
+
+        expect(message, 'Segment "e" is of type "int". Map expected.');
+      });
+
+      test('throws, when index is given for a non-array', () {
+        final json = <String, dynamic>{
+          'a': {'b': 1},
+        };
+
+        var message = '';
+        try {
+          json.add<int>('a[0]', 2);
+        } catch (e) {
+          message = (e as dynamic).message.toString();
+        }
+
+        expect(message, 'Segment "a[0]" is not a list item.');
+      });
     });
 
     group('json.set(json, path, value)', () {
@@ -134,6 +162,21 @@ void main() {
           json.set<int>('e[1]', 20);
           expect(json, {
             'e': [1, 20, 3],
+          });
+        });
+
+        test('set last item of an arry', () {
+          final json = <String, dynamic>{
+            'e': {
+              'f': [1, 2, 3],
+            },
+          };
+
+          json.set<int>('e/f[2]', 30);
+          expect(json, {
+            'e': {
+              'f': [1, 2, 30],
+            },
           });
         });
 
@@ -232,6 +275,26 @@ void main() {
     });
 
     group('json.get(json, path)', () {
+      group('allows to read values', () {
+        test('with existing path', () {
+          final json = <String, dynamic>{
+            'a': 1,
+            'b': {
+              'c': 2,
+              'd': {'e': 3},
+            },
+          };
+
+          expect(json.get<int>('a'), 1);
+          expect(json.get<Json>('b'), {
+            'c': 2,
+            'd': {'e': 3},
+          });
+          expect(json.get<int>('b/c'), 2);
+          expect(json.get<int>('b/d/e'), 3);
+        });
+      });
+
       group('allows to read from arrays', () {
         test('with single index', () {
           final json = <String, dynamic>{
@@ -275,6 +338,52 @@ void main() {
         }
 
         expect(message, 'Value at path "b/d" not found.');
+      });
+
+      test('throws when value is of unexpected type', () {
+        final json = <String, dynamic>{
+          'a': 1,
+          'b': {'c': '3'},
+        };
+
+        var message = '';
+        try {
+          json.get<int>('b/c');
+        } catch (e) {
+          message = (e as dynamic).message.toString();
+        }
+
+        expect(message, 'Cannot get key "c": String != int.');
+      });
+
+      test('throws when an array is not accessed with an index', () {
+        final json = <String, dynamic>{
+          'e': [1, 2, 3],
+        };
+
+        var message = '';
+        try {
+          json.get<int>('e/a');
+        } catch (e) {
+          message = (e as dynamic).message.toString();
+        }
+
+        expect(message, 'Segment "e" is not a Map.');
+      });
+
+      test('throws when a non-array is accessed with an index', () {
+        final json = <String, dynamic>{
+          'a': {'b': 1},
+        };
+
+        var message = '';
+        try {
+          json.get<int>('a[0]');
+        } catch (e) {
+          message = (e as dynamic).message.toString();
+        }
+
+        expect(message, 'Segment "a" is not a list item.');
       });
     });
 
