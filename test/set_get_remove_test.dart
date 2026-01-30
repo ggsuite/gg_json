@@ -32,6 +32,24 @@ void main() {
             'b': {'c': 1, 'd': 2},
           },
         });
+
+        json.add('d/e', [
+          [1, 2],
+          [3, 4],
+          {'f': 5},
+        ]);
+        expect(json, {
+          'a': {
+            'b': {'c': 1, 'd': 2},
+          },
+          'd': {
+            'e': [
+              [1, 2],
+              [3, 4],
+              {'f': 5},
+            ],
+          },
+        });
       });
 
       test('throws when an existing value is not of type T', () {
@@ -66,6 +84,104 @@ void main() {
         });
       });
 
+      group('updates array values', () {
+        test('with a single index', () {
+          final json = <String, dynamic>{
+            'e': [1, 2, 3],
+          };
+
+          json.set<int>('e[1]', 20);
+          expect(json, {
+            'e': [1, 20, 3],
+          });
+        });
+
+        test('with a nested index', () {
+          final json = <String, dynamic>{
+            'e': [
+              [10, 20],
+              [30, 40],
+              [50, 60],
+            ],
+          };
+
+          json.set<int>('e[1][1]', 55);
+          expect(json, {
+            'e': [
+              [10, 20],
+              [30, 55],
+              [50, 60],
+            ],
+          });
+        });
+
+        test('with an index exceeding the current length', () {
+          final json = <String, dynamic>{
+            'e': [
+              [10, 20],
+              [30, 40],
+              [50, 60],
+            ],
+          };
+
+          json.add<int>('e[3][2]', 66);
+          expect(json, {
+            'e': [
+              [10, 20],
+              [30, 40],
+              [50, 60],
+              [null, null, 66],
+            ],
+          });
+        });
+
+        test('with three fold nested index', () {
+          final json = <String, dynamic>{
+            'e': [
+              [
+                [100, 200],
+                [300, 400],
+              ],
+              [
+                [500, 600],
+                [700, 800],
+              ],
+            ],
+          };
+
+          json.set<int>('e[1][0][1]', 650);
+          expect(json, {
+            'e': [
+              [
+                [100, 200],
+                [300, 400],
+              ],
+              [
+                [500, 650],
+                [700, 800],
+              ],
+            ],
+          });
+        });
+
+        test('with deeper arrays', () {
+          final json = {
+            'a': [
+              [
+                [
+                  {
+                    'b': [1, 2, 3],
+                  },
+                ],
+              ],
+            ],
+          };
+
+          json.set<int>('a[0][0][0]/b[1]', 20);
+          expect(json.get<int>('a[0][0][0]/b[1]'), 20);
+        });
+      });
+
       test('throws when the path does not exist', () {
         final json = <String, dynamic>{
           'a': {'b': 1},
@@ -95,6 +211,35 @@ void main() {
     });
 
     group('json.get(json, path)', () {
+      group('allows to read from arrays', () {
+        test('with single index', () {
+          final json = <String, dynamic>{
+            'e': [1, 2, 3],
+          };
+          expect(json.get<int>('e[0]'), 1);
+          expect(json.get<int>('e[1]'), 2);
+          expect(json.get<int>('e[2]'), 3);
+          expect(json.getOrNull<int>('e[3]'), isNull);
+        });
+        test('with multi indices', () {
+          final json = <String, dynamic>{
+            'e': [
+              [10, 20],
+              [30, 40],
+              [50, 60],
+            ],
+          };
+          expect(json.get<int>('e[0][0]'), 10);
+          expect(json.get<int>('e[0][1]'), 20);
+          expect(json.get<int>('e[1][0]'), 30);
+          expect(json.get<int>('e[1][1]'), 40);
+          expect(json.get<int>('e[2][0]'), 50);
+          expect(json.get<int>('e[2][1]'), 60);
+          expect(json.getOrNull<int>('e[3][0]'), isNull);
+          expect(json.getOrNull<int>('e[0][2]'), isNull);
+        });
+      });
+
       test('throws when path is not found', () {
         final json = <String, dynamic>{
           'a': 1,

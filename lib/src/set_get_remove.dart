@@ -56,25 +56,54 @@ Json jsonAddByArray<T>({
 }) {
   _checkType<T>(json, path);
 
-  Json node = json;
+  dynamic parent = json;
 
   for (int i = 0; i < path.length; i++) {
     var pathSegment = path.elementAt(i);
-    if (pathSegment.isEmpty) {
+    final (segmentName, indices) = parseArrayIndex(pathSegment);
+
+    if (segmentName.isEmpty) {
       continue;
     }
 
-    if (i == path.length - 1) {
-      node[pathSegment] = value;
+    if (i == path.length - 1 && indices.isEmpty) {
+      parent[segmentName] = value;
       break;
     }
 
-    var childNode = node[pathSegment] as Json?;
-    if (childNode == null) {
-      childNode = {};
-      node[pathSegment] = childNode;
+    var child = parent[segmentName];
+
+    if (child == null) {
+      child = indices.isNotEmpty ? <dynamic>[] : <String, dynamic>{};
+      parent[segmentName] = child;
     }
-    node = childNode;
+
+    if (child is List) {
+      final last = indices.length - 1;
+      for (var i = 0; i < indices.length; i++) {
+        final index = indices.elementAt(i);
+        final parentIndex = i == 0 ? null : indices.elementAt(i - 1);
+
+        if ((child as List).length <= index) {
+          // Increase length of the childNode
+          child = [...child, ...List.filled(index - child.length + 1, null)];
+          if (parent is List) {
+            parent[parentIndex!] = child;
+          } else {
+            parent[segmentName] = child;
+          }
+        }
+
+        if (i == last) {
+          child[index] = value;
+        } else {
+          parent = child;
+          child = child[index] ?? <dynamic>[];
+        }
+      }
+    }
+
+    parent = child;
   }
 
   return json;
@@ -96,20 +125,31 @@ T jsonGet<T>(Json json, String path) {
 // ...........................................................................
 /// Returns a value from the json by path array
 T? jsonGetByArrayOrNull<T>(Json json, Iterable<String> path) {
-  var node = json;
+  dynamic node = json;
   for (var i = 0; i < path.length; i++) {
     final pathSegment = path.elementAt(i);
-    if (!node.containsKey(pathSegment)) {
+    final (segmentName, indices) = parseArrayIndex(pathSegment);
+
+    if (node is Map && !node.containsKey(segmentName)) {
       return null;
     }
     if ((i == path.length - 1)) {
-      final val = node[pathSegment];
+      var val = node[segmentName];
+      if (val is List<dynamic> && indices.isNotEmpty) {
+        for (final index in indices) {
+          if ((val as List).length <= index) {
+            return null;
+          }
+          val = val[index];
+        }
+      }
+
       if (val is T == false) {
         throw Exception('Existing value $val is not of type $T.');
       }
-      return node[pathSegment] as T;
+      return val as T;
     }
-    node = node[pathSegment] as Json;
+    node = node[segmentName] as dynamic;
   }
 
   return null;
