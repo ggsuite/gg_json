@@ -6,29 +6,50 @@
 
 import 'package:gg_json/gg_json.dart';
 
-/// Allows to call json.set() and json.get() to write and read values
-extension JsonGetSet on Json {
+/// Allows to call json.set() and json.getOrNull() to write and read values
+extension JsonGetSetRemove on Json {
   // ...........................................................................
-  /// Lists all paths in the JSON object.
+  /// Adds a value at [path] in the JSON object.
+  /// If the path does not exist, it will be created.
+  Json add<T>(String path, T value) =>
+      jsonAdd(json: this, path: path, value: value);
+
+  /// Adds a value at [path] in the JSON object.
+  /// If the path does not exist, an exception is thrown.
   Json set<T>(String path, T value) =>
       jsonSet(json: this, path: path, value: value);
 
   /// Read a value from the JSON object.
   /// Returns null if the path does not exist.
-  T? get<T>(String path) => jsonGetByArrayOrNull<T>(this, parseJsonPath(path));
+  T? getOrNull<T>(String path) => jsonGetOrNull<T>(this, path);
+
+  /// Read a value from the JSON object.
+  /// Throws when the path does not exist
+  /// or an existing value is not of type [T].
+  T get<T>(String path) => jsonGet<T>(this, path);
 
   /// Removes a value from the JSON object.
   void removeValue(String path) => jsonRemoveByArray(this, parseJsonPath(path));
 }
 
 // .............................................................................
-/// Write a value into the json
-Json jsonSet<T>({required Json json, required String path, required T value}) =>
-    jsonSetByArray(json: json, path: parseJsonPath(path), value: value);
+/// Write a value into the json.
+/// If the path does not exist, it will be created.
+Json jsonAdd<T>({required Json json, required String path, required T value}) =>
+    jsonAddByArray(json: json, path: parseJsonPath(path), value: value);
+
+/// Write a value into the json.
+/// If the path does not exist, an exception is thrown.
+Json jsonSet<T>({required Json json, required String path, required T value}) {
+  if (jsonGetOrNull<T>(json, path) == null) {
+    throw Exception('Path "$path" does not exist.');
+  }
+  return jsonAddByArray(json: json, path: parseJsonPath(path), value: value);
+}
 
 // .............................................................................
 /// Write a value into the json
-Json jsonSetByArray<T>({
+Json jsonAddByArray<T>({
   required Json json,
   required Iterable<String> path,
   required T value,
@@ -57,6 +78,19 @@ Json jsonSetByArray<T>({
   }
 
   return json;
+}
+
+/// Returns a value from the json by path. Returns null if not found.
+T? jsonGetOrNull<T>(Json json, String path) =>
+    jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
+
+/// Returns a value from the json by path. Throws if not found.
+T jsonGet<T>(Json json, String path) {
+  final val = jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
+  if (val == null) {
+    throw Exception('Value at path "$path" not found.');
+  }
+  return val;
 }
 
 // ...........................................................................

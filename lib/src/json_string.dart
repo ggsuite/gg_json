@@ -41,7 +41,7 @@ String jsonStringSet<T>(
     json = '{}';
   }
   final parsed = jsonDecode(json) as Json;
-  parsed.set<T>(path, value);
+  parsed.add<T>(path, value);
   return prettyPrint
       ? const JsonEncoder.withIndent('  ').convert(parsed)
       : jsonEncode(parsed);
@@ -54,7 +54,7 @@ String jsonStringSet<T>(
 /// - Throws when value is not of type [T].
 T? jsonStringGet<T>(String json, {required String path}) {
   final parsed = jsonDecode(json) as Json;
-  return parsed.get<T>(path);
+  return parsed.getOrNull<T>(path);
 }
 
 // ...........................................................................
