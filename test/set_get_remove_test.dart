@@ -135,6 +135,28 @@ void main() {
         expect(message, 'Segment "a[0]" is not a list item.');
       });
 
+      test('throws when the path does not exist', () {
+        final json = <String, dynamic>{
+          'a': {'b': 1},
+        };
+
+        var message = <String>[];
+        try {
+          json.set<int>('a/c', 2);
+        } catch (e) {
+          message = ((e as dynamic).message as String).split('\n');
+        }
+
+        expect(message, [
+          'Path segment "c" of "a/c" does not exist.',
+          '',
+          'Available paths:',
+          '  - /',
+          '  - /a',
+          '  - /a/b',
+        ]);
+      });
+
       test('updates existing path elements', () {
         final json = <String, dynamic>{
           'a': {
@@ -243,26 +265,11 @@ void main() {
         });
       });
 
-      test('throws when the path does not exist', () {
-        final json = <String, dynamic>{
-          'a': {'b': 1},
-        };
+      test('updates the complete object if path is empty', () {
+        final json = <String, dynamic>{'a': 1, 'b': 2};
 
-        var message = <String>[];
-        try {
-          json.set<int>('a/c', 2);
-        } catch (e) {
-          message = ((e as dynamic).message as String).split('\n');
-        }
-
-        expect(message, [
-          'Path segment "c" of "a/c" does not exist.',
-          '',
-          'Available paths:',
-          '  - /',
-          '  - /a',
-          '  - /a/b',
-        ]);
+        json.set<Json>('', {'x': 10, 'y': 20});
+        expect(json, {'x': 10, 'y': 20});
       });
     });
 

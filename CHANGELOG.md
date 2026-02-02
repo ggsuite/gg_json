@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Simplify examples
+
 ## [3.0.5] - 2026-01-30
 
 ### Changed
@@ -45,6 +51,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[Unreleased]: https://github.com/inlavigo/gg_json/compare/3.0.5...HEAD
 [3.0.5]: https://github.com/inlavigo/gg_json/compare/3.0.4...3.0.5
 [3.0.4]: https://github.com/inlavigo/gg_json/compare/3.0.3...3.0.4
 [3.0.3]: https://github.com/inlavigo/gg_json/compare/3.0.2...3.0.3

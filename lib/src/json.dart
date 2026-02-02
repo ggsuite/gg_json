@@ -13,11 +13,7 @@ const exampleJson = exampleJsonNested0;
 // .............................................................................
 /// A complex JSON document combining various structures and types.
 const exampleJsonNested0 = <String, dynamic>{
-  'objectValue': <String, dynamic>{
-    'nestedString': 'nested',
-    'nestedNull': null,
-    'nestedBoolean': true,
-  },
+  'object': <String, dynamic>{'string': 'nested', 'null': null, 'bool': true},
   'arrayValue': [
     'text',
     123,
@@ -33,7 +29,7 @@ const exampleJsonNested0 = <String, dynamic>{
       {'innerKey': 'innerValue'},
     ],
   ],
-  'numericVariants': <String, num>{
+  'numbers': <String, num>{
     'positive': 100,
     'negative': -50,
     'floating': 0.001,
@@ -46,12 +42,12 @@ const exampleJsonNested0 = <String, dynamic>{
 // .............................................................................
 /// A JSON document demonstrating various primitive types.
 const exampleJsonPrimitive = <String, dynamic>{
-  'stringValue': 'Hello, World',
-  'integerValue': 42,
-  'doubleValue': 3.14159,
-  'booleanTrue': true,
-  'booleanFalse': false,
-  'nullValue': null,
+  'string': 'Hello, World',
+  'int': 42,
+  'double': 3.14159,
+  'true': true,
+  'false': false,
+  'null': null,
 };
 
 // .............................................................................

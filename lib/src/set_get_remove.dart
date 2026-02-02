@@ -49,6 +49,13 @@ class _Set<T> {
   // ...........................................................................
   /// Write a value into the json
   Json _calc({required List<String> path, required Json json}) {
+    if (path.isEmpty) {
+      assert(value is Json);
+      json.clear();
+      json.addAll(value as Json);
+      return json;
+    }
+
     // Iterate all keys in the JSON
     final currentSegment = path.first;
     final (segmentName, indices) = parseArrayIndex(currentSegment);
