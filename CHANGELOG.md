@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- kidney: changed references to git
+
 ## [3.0.6] - 2026-02-02
 
 ### Changed
@@ -51,6 +57,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[Unreleased]: https://github.com/inlavigo/gg_json/compare/3.0.6...HEAD
 [3.0.6]: https://github.com/inlavigo/gg_json/compare/3.0.5...3.0.6
 [3.0.5]: https://github.com/inlavigo/gg_json/compare/3.0.4...3.0.5
 [3.0.4]: https://github.com/inlavigo/gg_json/compare/3.0.3...3.0.4
