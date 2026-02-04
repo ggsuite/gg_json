@@ -12,7 +12,7 @@ void main() {
     group('returns a list of all paths in the JSON document', () {
       group('with including values', () {
         test('with simple object', () {
-          expect({'a': 10}.ls(writeValues: true), ['/', '/a = 10']);
+          expect({'a': 10}.ls(writeValues: true), ['.', './a = 10']);
         });
 
         test('with nested object', () {
@@ -20,7 +20,7 @@ void main() {
             {
               'a': {'b': 10},
             }.ls(writeValues: true),
-            ['/', '/a', '/a/b = 10'],
+            ['.', './a', './a/b = 10'],
           );
         });
 
@@ -29,7 +29,7 @@ void main() {
             {
               'a': [10, 20],
             }.ls(writeValues: true),
-            ['/', '/a', '/a[0] = 10', '/a[1] = 20'],
+            ['.', './a', './a[0] = 10', './a[1] = 20'],
           );
         });
 
@@ -41,7 +41,7 @@ void main() {
                 {'c': 20},
               ],
             }.ls(writeValues: true),
-            ['/', '/a', '/a[0]/b = 10', '/a[1]/c = 20'],
+            ['.', './a', './a[0]/b = 10', './a[1]/c = 20'],
           );
         });
 
@@ -50,31 +50,31 @@ void main() {
           expect(
             paths,
             containsAll(<String>[
-              '/arrayValue[1] = 2',
-              '/arrayValue[2] = 3',
-              '/arrayValue[3]/innerKey = innerValue',
-              '/numbers',
-              '/numbers/positive = 100',
-              '/numbers/negative = -50',
-              '/numbers/floating = 0.001',
-              '/numbers/scientific = 1000000.0',
-              '/emptyObject',
-              '/emptyArray',
+              './arrayValue[1] = 2',
+              './arrayValue[2] = 3',
+              './arrayValue[3]/innerKey = innerValue',
+              './numbers',
+              './numbers/positive = 100',
+              './numbers/negative = -50',
+              './numbers/floating = 0.001',
+              './numbers/scientific = 1000000.0',
+              './emptyObject',
+              './emptyArray',
             ]),
           );
         });
 
         test('with line prefix', () {
           expect({'a': 10}.ls(writeValues: true, linePrefix: '>> '), [
-            '>> /',
-            '>> /a = 10',
+            '>> .',
+            '>> ./a = 10',
           ]);
         });
       });
 
       group('without including values', () {
         test('with simple object', () {
-          expect({'a': 10}.ls(writeValues: false), ['/', '/a']);
+          expect({'a': 10}.ls(writeValues: false), ['.', './a']);
         });
 
         test('with nested object', () {
@@ -82,7 +82,7 @@ void main() {
             {
               'a': {'b': 10},
             }.ls(writeValues: false),
-            ['/', '/a', '/a/b'],
+            ['.', './a', './a/b'],
           );
         });
 
@@ -91,7 +91,7 @@ void main() {
             {
               'a': [10, 20],
             }.ls(writeValues: false),
-            ['/', '/a', '/a[0]', '/a[1]'],
+            ['.', './a', './a[0]', './a[1]'],
           );
         });
 
@@ -103,7 +103,7 @@ void main() {
                 {'c': 20},
               ],
             }.ls(writeValues: false),
-            ['/', '/a', '/a[0]/b', '/a[1]/c'],
+            ['.', './a', './a[0]/b', './a[1]/c'],
           );
         });
 
@@ -112,74 +112,16 @@ void main() {
           expect(
             paths,
             containsAll(<String>[
-              '/arrayValue[1]',
-              '/arrayValue[2]',
-              '/arrayValue[3]/innerKey',
-              '/numbers',
-              '/numbers/positive',
-              '/numbers/negative',
-              '/numbers/floating',
-              '/numbers/scientific',
-              '/emptyObject',
-              '/emptyArray',
-            ]),
-          );
-        });
-      });
-
-      group('without . separator', () {
-        test('with simple object', () {
-          expect({'a': 10}.ls(writeValues: false, separator: '.'), ['.', '.a']);
-        });
-
-        test('with nested object', () {
-          expect(
-            {
-              'a': {'b': 10},
-            }.ls(writeValues: false, separator: '.'),
-            ['.', '.a', '.a.b'],
-          );
-        });
-
-        test('with array', () {
-          expect(
-            {
-              'a': [10, 20],
-            }.ls(writeValues: false, separator: '.'),
-            ['.', '.a', '.a[0]', '.a[1]'],
-          );
-        });
-
-        test('with array containing objects', () {
-          expect(
-            {
-              'a': [
-                {'b': 10},
-                {'c': 20},
-              ],
-            }.ls(writeValues: false, separator: '.'),
-            ['.', '.a', '.a[0].b', '.a[1].c'],
-          );
-        });
-
-        test('with complex exampleJsonNested0', () {
-          final paths = exampleJsonNested0.ls(
-            writeValues: false,
-            separator: '.',
-          );
-          expect(
-            paths,
-            containsAll(<String>[
-              '.arrayValue[1]',
-              '.arrayValue[2]',
-              '.arrayValue[3].innerKey',
-              '.numbers',
-              '.numbers.positive',
-              '.numbers.negative',
-              '.numbers.floating',
-              '.numbers.scientific',
-              '.emptyObject',
-              '.emptyArray',
+              './arrayValue[1]',
+              './arrayValue[2]',
+              './arrayValue[3]/innerKey',
+              './numbers',
+              './numbers/positive',
+              './numbers/negative',
+              './numbers/floating',
+              './numbers/scientific',
+              './emptyObject',
+              './emptyArray',
             ]),
           );
         });
@@ -194,7 +136,7 @@ void main() {
 
         final paths = json.ls(writeValues: true, exclude: RegExp('exclude'));
 
-        expect(paths, ['/', '/a = 1', '/c']);
+        expect(paths, ['.', './a = 1', './c']);
       });
     });
   });

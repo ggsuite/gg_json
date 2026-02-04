@@ -16,7 +16,8 @@ extension JsonGetSetRemove on Json {
 
   /// Read a value from the JSON object.
   /// Returns null if the path does not exist.
-  T? getOrNull<T>(String path) => _jsonGetOrNull<T>(this, path);
+  T? getOrNull<T>(String path, {bool throwWhenNotFound = false}) =>
+      _jsonGetOrNull<T>(this, path, throwWhenNotFound: throwWhenNotFound);
 
   /// Read a value from the JSON object.
   /// Throws when the path does not exist
@@ -163,13 +164,9 @@ class _Set<T> {
 }
 
 /// Returns a value from the json by path. Returns null if not found.
-T? _jsonGetOrNull<T>(Json json, String path) =>
-    _jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
-
-/// Returns a value from the json by path. Throws if not found.
-T _jsonGet<T>(Json json, String path) {
-  final val = _jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
-  if (val == null) {
+T? _jsonGetOrNull<T>(Json json, String path, {bool throwWhenNotFound = false}) {
+  final result = _jsonGetByArrayOrNull<T>(json, parseJsonPath(path));
+  if (result == null && throwWhenNotFound) {
     throw Exception(
       [
         'Value at path "$path" not found.',
@@ -179,8 +176,12 @@ T _jsonGet<T>(Json json, String path) {
       ].join('\n'),
     );
   }
-  return val;
+  return result;
 }
+
+/// Returns a value from the json by path. Throws if not found.
+T _jsonGet<T>(Json json, String path) =>
+    _jsonGetOrNull<T>(json, path, throwWhenNotFound: true) as T;
 
 // .............................................................................
 /// Returns a value from the json by path array

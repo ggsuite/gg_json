@@ -13,25 +13,14 @@ extension JsonObjectPaths on Json {
   List<String> ls({
     bool writeValues = false,
     Pattern? exclude,
-    String separator = '/',
     String linePrefix = '',
   }) {
     final result = <List<String>>[
-      [separator],
+      ['.'],
     ];
-    _jsonLs(
-      this,
-      result,
-      [''],
-      writeValues: writeValues,
-      exclude: exclude,
-      separator: separator,
-    );
+    _jsonLs(this, result, ['.'], writeValues: writeValues, exclude: exclude);
 
-    return result
-        .map((e) => e.join(separator))
-        .map((e) => '$linePrefix$e')
-        .toList();
+    return result.map((e) => e.join('/')).map((e) => '$linePrefix$e').toList();
   }
 }
 
@@ -43,7 +32,6 @@ void _jsonLs(
   List<String> parent, {
   required bool writeValues,
   required Pattern? exclude,
-  required String separator,
 }) {
   for (final key in json.keys) {
     // Exclude keys that match the exclude pattern
@@ -57,19 +45,12 @@ void _jsonLs(
     // Handle maps
     if (val is Map<String, dynamic>) {
       paths.add(child);
-      _jsonLs(
-        val,
-        paths,
-        child,
-        writeValues: writeValues,
-        exclude: exclude,
-        separator: separator,
-      );
+      _jsonLs(val, paths, child, writeValues: writeValues, exclude: exclude);
     }
     // Handle lists
     else if (val is List) {
       paths.add(child);
-      _lsList(val, paths, child, writeValues, exclude, parent, key, separator);
+      _lsList(val, paths, child, writeValues, exclude, parent, key);
     }
     // Handle other values
     else {
@@ -88,7 +69,6 @@ void _lsList(
   Pattern? exclude,
   List<String> parent,
   String key,
-  String separator,
 ) {
   for (var i = 0; i < val.length; i++) {
     final path = [...child];
@@ -102,7 +82,6 @@ void _lsList(
         path,
         writeValues: writeValues,
         exclude: exclude,
-        separator: separator,
       );
     }
     // Handle list in list
@@ -115,7 +94,6 @@ void _lsList(
         exclude,
         parent,
         key,
-        separator,
       );
     }
     // Handle other values
