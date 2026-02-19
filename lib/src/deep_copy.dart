@@ -8,7 +8,7 @@ import 'package:gg_json/gg_json.dart';
 
 // .............................................................................
 /// Deep copies a JSON document.
-Json deepCopy(Json json, {bool throwOnNonJsonObjects = true}) {
+Json deepCopy(Json json, {bool throwOnNonJsonObjects = false}) {
   final copy = <String, dynamic>{};
   for (final entry in json.entries) {
     final key = entry.key;
@@ -38,7 +38,7 @@ Json deepCopy(Json json, {bool throwOnNonJsonObjects = true}) {
 /// Deep copies a JSON List.
 List<dynamic> deepCopyList(
   List<dynamic> list, {
-  bool throwOnNonJsonObjects = true,
+  bool throwOnNonJsonObjects = false,
 }) {
   final copy = <dynamic>[];
   for (final element in list) {
@@ -61,6 +61,6 @@ const _ds = deepCopy;
 /// Allows to call json.deepCopy()
 extension DeepCopyJson on Json {
   /// Returns a deep copy of this JSON document.
-  Json deepCopy({bool throwOnNonJsonObjects = true}) =>
+  Json deepCopy({bool throwOnNonJsonObjects = false}) =>
       _ds(this, throwOnNonJsonObjects: throwOnNonJsonObjects);
 }
