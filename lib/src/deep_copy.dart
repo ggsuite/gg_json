@@ -39,3 +39,12 @@ List<dynamic> deepCopyList(List<dynamic> list) {
   }
   return copy;
 }
+
+const _ds = deepCopy;
+
+// .............................................................................
+/// Allows to call json.deepCopy()
+extension DeepCopyJson on Json {
+  /// Returns a deep copy of this JSON document.
+  Json deepCopy() => _ds(this);
+}

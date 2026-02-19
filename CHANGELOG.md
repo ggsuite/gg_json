@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.8] - 2026-02-19
+
+### Added
+
+- Add json.deepCopy() extension method
+
 ## [3.0.7] - 2026-02-04
 
 ### Changed
@@ -61,6 +67,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.0.8]: https://github.com/inlavigo/gg_json/compare/3.0.7...3.0.8
 [3.0.7]: https://github.com/inlavigo/gg_json/compare/3.0.6...3.0.7
 [3.0.6]: https://github.com/inlavigo/gg_json/compare/3.0.5...3.0.6
 [3.0.5]: https://github.com/inlavigo/gg_json/compare/3.0.4...3.0.5

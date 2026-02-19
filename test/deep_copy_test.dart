@@ -14,6 +14,7 @@ void main() {
     test('example JSON', () {
       // Verify that the result is equal to the original example JSON
       expect(deepCopy(exampleJson), exampleJson);
+      expect(exampleJson.deepCopy(), exampleJson);
       expect(deepCopy(exampleJsonNested0), exampleJsonNested0);
       expect(deepCopy(exampleJsonNested1), exampleJsonNested1);
       expect(deepCopy(exampleJsonPrimitive), exampleJsonPrimitive);
