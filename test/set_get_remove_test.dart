@@ -17,14 +17,38 @@ void main() {
   group('JsonGetSetRemove', () {
     group('json.set(json, path, value)', () {
       group('creates missing path elements', () {
-        test('with an empty base object', () {
-          final json = <String, dynamic>{};
+        group('with an empty base object', () {
+          test('with leading /', () {
+            final json = <String, dynamic>{};
 
-          json.set('/a/b/c', 1, extend: true);
-          expect(json, {
-            'a': {
-              'b': {'c': 1},
-            },
+            json.set('/a/b/c', 1, extend: true);
+            expect(json, {
+              'a': {
+                'b': {'c': 1},
+              },
+            });
+          });
+
+          test('with leading ./', () {
+            final json = <String, dynamic>{};
+
+            json.set('./a/b/c', 1, extend: true);
+            expect(json, {
+              'a': {
+                'b': {'c': 1},
+              },
+            });
+          });
+
+          test('with no leading sign', () {
+            final json = <String, dynamic>{};
+
+            json.set('a/b/c', 1, extend: true);
+            expect(json, {
+              'a': {
+                'b': {'c': 1},
+              },
+            });
           });
         });
 
@@ -151,9 +175,9 @@ void main() {
           'Path segment "c" of "a/c" does not exist.',
           '',
           'Available paths:',
-          '  - /',
-          '  - /a',
-          '  - /a/b',
+          '  - .',
+          '  - ./a',
+          '  - ./a/b',
         ]);
       });
 
@@ -262,6 +286,8 @@ void main() {
 
           json.set<int>('a[0][0][0]/b[1]', 20);
           expect(json.get<int>('a[0][0][0]/b[1]'), 20);
+          expect(json.get<int>('/a[0][0][0]/b[1]'), 20);
+          expect(json.get<int>('./a[0][0][0]/b[1]'), 20);
         });
       });
 
@@ -365,10 +391,10 @@ void main() {
           'Value at path "b/d" not found.',
           '',
           'Available paths:',
-          '  - /',
-          '  - /a',
-          '  - /b',
-          '  - /b/c',
+          '  - .',
+          '  - ./a',
+          '  - ./b',
+          '  - ./b/c',
         ]);
       });
 

@@ -14,9 +14,34 @@ void main() {
     test('example JSON', () {
       // Verify that the result is equal to the original example JSON
       expect(deepCopy(exampleJson), exampleJson);
+      expect(exampleJson.deepCopy(), exampleJson);
       expect(deepCopy(exampleJsonNested0), exampleJsonNested0);
       expect(deepCopy(exampleJsonNested1), exampleJsonNested1);
       expect(deepCopy(exampleJsonPrimitive), exampleJsonPrimitive);
+    });
+
+    group('with throwOnNonJsonObjects', () {
+      final dateTime = DateTime.now();
+
+      test('throws on non-JSON values', () {
+        var message = <String>[];
+
+        try {
+          final json = {'valid': 'string', 'invalid': dateTime};
+          deepCopy(json, throwOnNonJsonObjects: true);
+        } catch (e) {
+          message = (e as dynamic).message.toString().trim().split('\n');
+        }
+        expect(message, ['Value $dateTime is not a valid JSON value.']);
+      });
+
+      test('does not throw on non-JSON values', () {
+        final json = {'valid': 'string', 'invalid': dateTime};
+        expect(
+          () => deepCopy(json, throwOnNonJsonObjects: false),
+          returnsNormally,
+        );
+      });
     });
   });
 }
