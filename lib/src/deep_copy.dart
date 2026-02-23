@@ -8,17 +8,30 @@ import 'package:gg_json/gg_json.dart';
 
 // .............................................................................
 /// Deep copies a JSON document.
-Json deepCopy(Json json, {bool throwOnNonJsonObjects = false}) {
+Json deepCopy(
+  Json json, {
+  bool throwOnNonJsonObjects = false,
+  bool Function(MapEntry<String, dynamic>)? where,
+}) {
   final copy = <String, dynamic>{};
   for (final entry in json.entries) {
+    if (where != null && where(entry) == false) {
+      continue; // Skip this entry if where returns false
+    }
+
     final key = entry.key;
     final value = entry.value;
     if (value is Map<String, dynamic>) {
-      copy[key] = deepCopy(value, throwOnNonJsonObjects: throwOnNonJsonObjects);
+      copy[key] = deepCopy(
+        value,
+        throwOnNonJsonObjects: throwOnNonJsonObjects,
+        where: where,
+      );
     } else if (value is List<dynamic>) {
       copy[key] = deepCopyList(
         value,
         throwOnNonJsonObjects: throwOnNonJsonObjects,
+        where: where,
       );
     } else {
       if (throwOnNonJsonObjects && isJsonValue(value) == false) {
@@ -39,14 +52,25 @@ Json deepCopy(Json json, {bool throwOnNonJsonObjects = false}) {
 List<dynamic> deepCopyList(
   List<dynamic> list, {
   bool throwOnNonJsonObjects = false,
+  bool Function(MapEntry<String, dynamic>)? where,
 }) {
   final copy = <dynamic>[];
   for (final element in list) {
     if (element is Map<String, dynamic>) {
-      copy.add(deepCopy(element, throwOnNonJsonObjects: throwOnNonJsonObjects));
+      copy.add(
+        deepCopy(
+          element,
+          throwOnNonJsonObjects: throwOnNonJsonObjects,
+          where: where,
+        ),
+      );
     } else if (element is List<dynamic>) {
       copy.add(
-        deepCopyList(element, throwOnNonJsonObjects: throwOnNonJsonObjects),
+        deepCopyList(
+          element,
+          throwOnNonJsonObjects: throwOnNonJsonObjects,
+          where: where,
+        ),
       );
     } else {
       copy.add(element);
@@ -61,6 +85,8 @@ const _ds = deepCopy;
 /// Allows to call json.deepCopy()
 extension DeepCopyJson on Json {
   /// Returns a deep copy of this JSON document.
-  Json deepCopy({bool throwOnNonJsonObjects = false}) =>
-      _ds(this, throwOnNonJsonObjects: throwOnNonJsonObjects);
+  Json deepCopy({
+    bool throwOnNonJsonObjects = false,
+    bool Function(dynamic)? where,
+  }) => _ds(this, throwOnNonJsonObjects: throwOnNonJsonObjects, where: where);
 }

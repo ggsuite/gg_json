@@ -43,5 +43,25 @@ void main() {
         );
       });
     });
+
+    group('with where', () {
+      test('skips values where where returns false', () {
+        final json = {
+          'keep': 'this',
+          'skip': 'that',
+          'nested': {'keep': 'this too', 'skip': 'that too'},
+        };
+
+        final result = deepCopy(
+          json,
+          where: (value) => value.value != 'that' && value.value != 'that too',
+        );
+
+        expect(result, {
+          'keep': 'this',
+          'nested': {'keep': 'this too'},
+        });
+      });
+    });
   });
 }
