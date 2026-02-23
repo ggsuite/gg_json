@@ -11,11 +11,12 @@ import 'package:gg_json/gg_json.dart';
 Json deepCopy(
   Json json, {
   bool throwOnNonJsonObjects = false,
-  bool Function(MapEntry<String, dynamic>)? where,
+  bool ignoreNonJsonObjects = false,
+  bool Function(String key, dynamic value)? where,
 }) {
   final copy = <String, dynamic>{};
   for (final entry in json.entries) {
-    if (where != null && where(entry) == false) {
+    if (where != null && where(entry.key, entry.value) == false) {
       continue; // Skip this entry if where returns false
     }
 
@@ -25,21 +26,29 @@ Json deepCopy(
       copy[key] = deepCopy(
         value,
         throwOnNonJsonObjects: throwOnNonJsonObjects,
+        ignoreNonJsonObjects: ignoreNonJsonObjects,
         where: where,
       );
     } else if (value is List<dynamic>) {
       copy[key] = deepCopyList(
         value,
         throwOnNonJsonObjects: throwOnNonJsonObjects,
+        ignoreNonJsonObjects: ignoreNonJsonObjects,
         where: where,
       );
     } else {
-      if (throwOnNonJsonObjects && isJsonValue(value) == false) {
-        throw ArgumentError.value(
-          value,
-          key,
-          'Value $value is not a valid JSON value.',
-        );
+      if (isJsonValue(value) == false) {
+        if (throwOnNonJsonObjects) {
+          throw ArgumentError.value(
+            value,
+            key,
+            'Value $value is not a valid JSON value.',
+          );
+        }
+
+        if (ignoreNonJsonObjects) {
+          continue;
+        }
       }
       copy[key] = value;
     }
@@ -51,8 +60,9 @@ Json deepCopy(
 /// Deep copies a JSON List.
 List<dynamic> deepCopyList(
   List<dynamic> list, {
-  bool throwOnNonJsonObjects = false,
-  bool Function(MapEntry<String, dynamic>)? where,
+  bool throwOnNonJsonObjects = true,
+  bool ignoreNonJsonObjects = false,
+  bool Function(String key, dynamic value)? where,
 }) {
   final copy = <dynamic>[];
   for (final element in list) {
@@ -61,6 +71,7 @@ List<dynamic> deepCopyList(
         deepCopy(
           element,
           throwOnNonJsonObjects: throwOnNonJsonObjects,
+          ignoreNonJsonObjects: ignoreNonJsonObjects,
           where: where,
         ),
       );
@@ -69,10 +80,23 @@ List<dynamic> deepCopyList(
         deepCopyList(
           element,
           throwOnNonJsonObjects: throwOnNonJsonObjects,
+          ignoreNonJsonObjects: ignoreNonJsonObjects,
           where: where,
         ),
       );
     } else {
+      if (isJsonValue(element) == false) {
+        if (throwOnNonJsonObjects) {
+          throw ArgumentError.value(
+            element,
+            'element',
+            'Value $element is not a valid JSON value.',
+          );
+        } else if (ignoreNonJsonObjects) {
+          continue;
+        }
+      }
+
       copy.add(element);
     }
   }
@@ -86,7 +110,13 @@ const _ds = deepCopy;
 extension DeepCopyJson on Json {
   /// Returns a deep copy of this JSON document.
   Json deepCopy({
-    bool throwOnNonJsonObjects = false,
-    bool Function(dynamic)? where,
-  }) => _ds(this, throwOnNonJsonObjects: throwOnNonJsonObjects, where: where);
+    bool throwOnNonJsonObjects = true,
+    bool ignoreNonJsonObjects = false,
+    bool Function(String key, dynamic value)? where,
+  }) => _ds(
+    this,
+    throwOnNonJsonObjects: throwOnNonJsonObjects,
+    ignoreNonJsonObjects: ignoreNonJsonObjects,
+    where: where,
+  );
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.12] - 2026-02-23
+
+### Changed
+
+- DeepCopy: Add ignoreNonJsonObjects option
+
 ## [3.0.11] - 2026-02-23
 
 ### Added
@@ -85,6 +91,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.0.12]: https://github.com/inlavigo/gg_json/compare/3.0.11...3.0.12
 [3.0.11]: https://github.com/inlavigo/gg_json/compare/3.0.10...3.0.11
 [3.0.10]: https://github.com/inlavigo/gg_json/compare/3.0.9...3.0.10
 [3.0.9]: https://github.com/inlavigo/gg_json/compare/3.0.8...3.0.9

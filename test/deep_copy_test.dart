@@ -23,16 +23,30 @@ void main() {
     group('with throwOnNonJsonObjects', () {
       final dateTime = DateTime.now();
 
-      test('throws on non-JSON values', () {
-        var message = <String>[];
+      group('throws on non-JSON values', () {
+        test('within a map', () {
+          var message = <String>[];
 
-        try {
-          final json = {'valid': 'string', 'invalid': dateTime};
-          deepCopy(json, throwOnNonJsonObjects: true);
-        } catch (e) {
-          message = (e as dynamic).message.toString().trim().split('\n');
-        }
-        expect(message, ['Value $dateTime is not a valid JSON value.']);
+          try {
+            final json = {'valid': 'string', 'invalid': dateTime};
+            deepCopy(json, throwOnNonJsonObjects: true);
+          } catch (e) {
+            message = (e as dynamic).message.toString().trim().split('\n');
+          }
+          expect(message, ['Value $dateTime is not a valid JSON value.']);
+        });
+
+        test('within a list', () {
+          var message = <String>[];
+
+          try {
+            final json = ['valid', dateTime];
+            deepCopyList(json, throwOnNonJsonObjects: true);
+          } catch (e) {
+            message = (e as dynamic).message.toString().trim().split('\n');
+          }
+          expect(message, ['Value $dateTime is not a valid JSON value.']);
+        });
       });
 
       test('does not throw on non-JSON values', () {
@@ -54,13 +68,29 @@ void main() {
 
         final result = deepCopy(
           json,
-          where: (value) => value.value != 'that' && value.value != 'that too',
+          where: (key, value) => value != 'that' && value != 'that too',
         );
 
         expect(result, {
           'keep': 'this',
           'nested': {'keep': 'this too'},
         });
+      });
+    });
+
+    group('with ignoreNonJsonObjects', () {
+      final dateTime = DateTime.now();
+
+      test('skips non-JSON values', () {
+        final json = {'valid': 'string', 'invalid': dateTime};
+        final result = deepCopy(json, ignoreNonJsonObjects: true);
+        expect(result, {'valid': 'string'});
+      });
+
+      test('does not skip non-JSON values', () {
+        final json = {'valid': 'string', 'invalid': dateTime};
+        final result = deepCopy(json, ignoreNonJsonObjects: false);
+        expect(result, json);
       });
     });
   });
