@@ -138,6 +138,50 @@ void main() {
 
         expect(paths, ['.', './a = 1', './c']);
       });
+
+      group('with where callback', () {
+        test('filtering for values', () {
+          final paths = exampleJson.ls(
+            writeValues: true,
+            where: ({key, path, value}) =>
+                value is num && value < 10 && value >= 0,
+          );
+
+          expect(paths, [
+            './arrayValue[0] = 1',
+            './arrayValue[1] = 2',
+            './arrayValue[2] = 3',
+            './numbers/floating = 0.001',
+          ]);
+        });
+
+        test('filtering for paths', () {
+          final paths = exampleJson.ls(
+            writeValues: true,
+            where: ({key, path, value}) => path?.contains('numbers') == true,
+          );
+
+          expect(paths, [
+            './numbers/positive = 100',
+            './numbers/negative = -50',
+            './numbers/floating = 0.001',
+            './numbers/scientific = 1000000.0',
+          ]);
+        });
+
+        test('filtering for keys', () {
+          final paths = exampleJson.ls(
+            writeValues: true,
+            where: ({key, path, value}) =>
+                key == 'positive' || key == 'negative',
+          );
+
+          expect(paths, [
+            './numbers/positive = 100',
+            './numbers/negative = -50',
+          ]);
+        });
+      });
     });
   });
 }

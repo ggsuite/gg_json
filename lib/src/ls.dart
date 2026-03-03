@@ -6,6 +6,9 @@
 
 import 'package:gg_json/gg_json.dart';
 
+/// Filter method for [Json.ls]
+typedef WhereProp = bool Function({String? key, dynamic value, String? path});
+
 /// Lists all paths in the example JSON document.
 extension JsonObjectPaths on Json {
   // ...........................................................................
@@ -14,11 +17,26 @@ extension JsonObjectPaths on Json {
     bool writeValues = false,
     Pattern? exclude,
     String linePrefix = '',
+    WhereProp? where,
   }) {
-    final result = <List<String>>[
+    final result = <List<String>>[];
+    _add(
+      parent: [],
+      paths: result,
+      key: '.',
+      val: this,
+      where: where,
+      writeValues: false,
+    );
+
+    _jsonLs(
+      this,
+      result,
       ['.'],
-    ];
-    _jsonLs(this, result, ['.'], writeValues: writeValues, exclude: exclude);
+      writeValues: writeValues,
+      exclude: exclude,
+      where: where,
+    );
 
     return result.map((e) => e.join('/')).map((e) => '$linePrefix$e').toList();
   }
@@ -32,6 +50,7 @@ void _jsonLs(
   List<String> parent, {
   required bool writeValues,
   required Pattern? exclude,
+  required WhereProp? where,
 }) {
   for (final key in json.keys) {
     // Exclude keys that match the exclude pattern
@@ -44,18 +63,47 @@ void _jsonLs(
 
     // Handle maps
     if (val is Map<String, dynamic>) {
-      paths.add(child);
-      _jsonLs(val, paths, child, writeValues: writeValues, exclude: exclude);
+      _add(
+        parent: parent,
+        paths: paths,
+        key: key,
+        val: val,
+        where: where,
+        writeValues: false,
+      );
+
+      _jsonLs(
+        val,
+        paths,
+        child,
+        writeValues: writeValues,
+        exclude: exclude,
+        where: where,
+      );
     }
     // Handle lists
     else if (val is List) {
-      paths.add(child);
-      _lsList(val, paths, child, writeValues, exclude, parent, key);
+      _add(
+        parent: parent,
+        paths: paths,
+        key: key,
+        val: val,
+        where: where,
+        writeValues: false,
+      );
+
+      _lsList(val, paths, child, writeValues, exclude, parent, key, where);
     }
     // Handle other values
     else {
-      final segment = writeValues ? '$key = $val' : key;
-      paths.add([...parent, segment]);
+      _add(
+        parent: parent,
+        paths: paths,
+        key: key,
+        val: val,
+        where: where,
+        writeValues: writeValues,
+      );
     }
   }
 }
@@ -69,6 +117,7 @@ void _lsList(
   Pattern? exclude,
   List<String> parent,
   String key,
+  WhereProp? where,
 ) {
   for (var i = 0; i < val.length; i++) {
     final path = [...child];
@@ -82,6 +131,7 @@ void _lsList(
         path,
         writeValues: writeValues,
         exclude: exclude,
+        where: where,
       );
     }
     // Handle list in list
@@ -94,12 +144,36 @@ void _lsList(
         exclude,
         parent,
         key,
+        where,
       );
     }
     // Handle other values
     else {
-      final segment = writeValues ? '$key[$i] = ${val[i]}' : '$key[$i]';
-      paths.add([...parent, segment]);
+      _add(
+        parent: parent,
+        paths: paths,
+        key: '$key[$i]',
+        val: val[i],
+        where: where,
+        writeValues: writeValues,
+      );
     }
   }
+}
+
+// ...........................................................................
+void _add({
+  required List<String> parent,
+  required List<List<String>> paths,
+  required String key,
+  required dynamic val,
+  required WhereProp? where,
+  required bool writeValues,
+}) {
+  if (where != null && !where(key: key, value: val, path: parent.join('/'))) {
+    return;
+  }
+
+  final segment = writeValues ? '$key = $val' : key;
+  paths.add([...parent, segment]);
 }
