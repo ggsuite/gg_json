@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.13] - 2026-03-03
+
+### Changed
+
+- Make int - double type checks more robust
+
 ## [3.0.12] - 2026-02-23
 
 ### Changed
@@ -91,6 +97,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.0.13]: https://github.com/inlavigo/gg_json/compare/3.0.12...3.0.13
 [3.0.12]: https://github.com/inlavigo/gg_json/compare/3.0.11...3.0.12
 [3.0.11]: https://github.com/inlavigo/gg_json/compare/3.0.10...3.0.11
 [3.0.10]: https://github.com/inlavigo/gg_json/compare/3.0.9...3.0.10

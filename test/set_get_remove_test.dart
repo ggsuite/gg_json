@@ -131,6 +131,14 @@ void main() {
         expect(message, 'Cannot write key "b": int != String.');
       });
 
+      test('throws not when an existing value has int and new has double', () {
+        final json = <String, dynamic>{
+          'a': <String, dynamic>{'b': 1},
+        };
+
+        json.set<double>('a/b', 2.0);
+      });
+
       test('throws, when array is accessed without index', () {
         final json = <String, dynamic>{'e': 5};
 

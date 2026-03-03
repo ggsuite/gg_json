@@ -305,6 +305,10 @@ void _checkTypes(String key, dynamic existing, dynamic newElement) {
     return;
   }
 
+  if (existing is num && newElement is num) {
+    return;
+  }
+
   if (existing.runtimeType != newElement.runtimeType) {
     throw Exception(
       'Cannot write key "$key": ${existing.runtimeType} != '
