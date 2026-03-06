@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.15] - 2026-03-06
+
+### Added
+
+- Add JsonTags
+
 ## [3.0.14] - 2026-03-03
 
 ### Added
@@ -103,6 +109,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.0.15]: https://github.com/inlavigo/gg_json/compare/3.0.14...3.0.15
 [3.0.14]: https://github.com/inlavigo/gg_json/compare/3.0.13...3.0.14
 [3.0.13]: https://github.com/inlavigo/gg_json/compare/3.0.12...3.0.13
 [3.0.12]: https://github.com/inlavigo/gg_json/compare/3.0.11...3.0.12

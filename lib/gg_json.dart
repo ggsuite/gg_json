@@ -11,6 +11,7 @@ export 'src/deep_equals.dart';
 export 'src/is_json_value.dart';
 export 'src/is_valid_json_key.dart';
 export 'src/json.dart';
+export 'src/json_tags.dart';
 export 'src/ls.dart';
 export 'src/parse_json_path.dart';
 export 'src/set_get_remove.dart';
