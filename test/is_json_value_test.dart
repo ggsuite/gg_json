@@ -46,4 +46,38 @@ void main() {
       expect(isJsonValue(example), isFalse);
     });
   });
+
+  group('isSimpleJsonValue', () {
+    test('valid simple JSON values', () {
+      expect(isSimpleJsonValue('string'), isTrue);
+      expect(isSimpleJsonValue(42), isTrue);
+      expect(isSimpleJsonValue(3.14), isTrue);
+      expect(isSimpleJsonValue(true), isTrue);
+      expect(isSimpleJsonValue(false), isTrue);
+      expect(isSimpleJsonValue(null), isTrue);
+    });
+
+    test('invalid simple JSON values', () {
+      expect(isSimpleJsonValue({'key': 'value'}), isFalse);
+      expect(isSimpleJsonValue([1, 2, 3]), isFalse);
+      expect(isSimpleJsonValue(Object()), isFalse);
+    });
+  });
+
+  group('isComplexJsonValue', () {
+    test('valid complex JSON values', () {
+      expect(isComplexJsonValue({'key': 'value'}), isTrue);
+      expect(isComplexJsonValue([1, 2, 3]), isTrue);
+    });
+
+    test('invalid complex JSON values', () {
+      expect(isComplexJsonValue('string'), isFalse);
+      expect(isComplexJsonValue(42), isFalse);
+      expect(isComplexJsonValue(3.14), isFalse);
+      expect(isComplexJsonValue(true), isFalse);
+      expect(isComplexJsonValue(false), isFalse);
+      expect(isComplexJsonValue(null), isFalse);
+      expect(isComplexJsonValue(Object()), isFalse);
+    });
+  });
 }

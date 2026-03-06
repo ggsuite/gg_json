@@ -15,6 +15,7 @@ extension JsonObjectPaths on Json {
   /// Lists all paths in the JSON object.
   List<String> ls({
     bool writeValues = false,
+    bool alsoComplexValues = false,
     Pattern? exclude,
     String linePrefix = '',
     WhereProp? where,
@@ -26,7 +27,9 @@ extension JsonObjectPaths on Json {
       key: '.',
       val: this,
       where: where,
-      writeValues: false,
+      writeValues:
+          alsoComplexValues, // Don't list root element when only simple values
+      alsoComplexValues: alsoComplexValues,
     );
 
     _jsonLs(
@@ -34,6 +37,7 @@ extension JsonObjectPaths on Json {
       result,
       ['.'],
       writeValues: writeValues,
+      alsoComplexValues: alsoComplexValues,
       exclude: exclude,
       where: where,
     );
@@ -49,6 +53,7 @@ void _jsonLs(
   List<List<String>> paths,
   List<String> parent, {
   required bool writeValues,
+  required bool alsoComplexValues,
   required Pattern? exclude,
   required WhereProp? where,
 }) {
@@ -69,7 +74,8 @@ void _jsonLs(
         key: key,
         val: val,
         where: where,
-        writeValues: false,
+        writeValues: writeValues,
+        alsoComplexValues: alsoComplexValues,
       );
 
       _jsonLs(
@@ -77,6 +83,7 @@ void _jsonLs(
         paths,
         child,
         writeValues: writeValues,
+        alsoComplexValues: alsoComplexValues,
         exclude: exclude,
         where: where,
       );
@@ -89,10 +96,21 @@ void _jsonLs(
         key: key,
         val: val,
         where: where,
-        writeValues: false,
+        writeValues: writeValues,
+        alsoComplexValues: alsoComplexValues,
       );
 
-      _lsList(val, paths, child, writeValues, exclude, parent, key, where);
+      _lsList(
+        val,
+        paths,
+        child,
+        writeValues,
+        alsoComplexValues,
+        exclude,
+        parent,
+        key,
+        where,
+      );
     }
     // Handle other values
     else {
@@ -103,6 +121,7 @@ void _jsonLs(
         val: val,
         where: where,
         writeValues: writeValues,
+        alsoComplexValues: alsoComplexValues,
       );
     }
   }
@@ -114,6 +133,7 @@ void _lsList(
   List<List<String>> paths,
   List<String> child,
   bool writeValues,
+  bool alsoComplexValues,
   Pattern? exclude,
   List<String> parent,
   String key,
@@ -130,6 +150,7 @@ void _lsList(
         paths,
         path,
         writeValues: writeValues,
+        alsoComplexValues: alsoComplexValues,
         exclude: exclude,
         where: where,
       );
@@ -141,6 +162,7 @@ void _lsList(
         paths,
         path,
         writeValues,
+        alsoComplexValues,
         exclude,
         parent,
         key,
@@ -156,6 +178,7 @@ void _lsList(
         val: val[i],
         where: where,
         writeValues: writeValues,
+        alsoComplexValues: alsoComplexValues,
       );
     }
   }
@@ -169,9 +192,14 @@ void _add({
   required dynamic val,
   required WhereProp? where,
   required bool writeValues,
+  required bool alsoComplexValues,
 }) {
   if (where != null && !where(key: key, value: val, path: parent.join('/'))) {
     return;
+  }
+
+  if (!alsoComplexValues) {
+    writeValues = writeValues && !isComplexJsonValue(val);
   }
 
   final segment = writeValues ? '$key = $val' : key;

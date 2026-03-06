@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 void main() {
   group('Json.ls', () {
     group('returns a list of all paths in the JSON document', () {
-      group('with including values', () {
+      group('with writeValues', () {
         test('with simple object', () {
           expect({'a': 10}.ls(writeValues: true), ['.', './a = 10']);
         });
@@ -70,6 +70,8 @@ void main() {
             '>> ./a = 10',
           ]);
         });
+
+        test('with alsoComplexValues = true', () {});
       });
 
       group('without including values', () {
@@ -179,6 +181,43 @@ void main() {
           expect(paths, [
             './numbers/positive = 100',
             './numbers/negative = -50',
+          ]);
+        });
+      });
+
+      group('with alsoComplexValues true', () {
+        test('writes also complex values', () {
+          expect(exampleJson.ls(writeValues: true, alsoComplexValues: true), [
+            '. = {object: {string: nested, null: null, bool: true}, arrayValue:'
+                ' [text, 123, 45.6, true, false, null, {deepKey: deepValue}, '
+                '[1, 2, 3, {innerKey: innerValue}]], '
+                'numbers: {positive: 100, negative: -50, floating: 0.001, '
+                'scientific: 1000000.0}, emptyObject: {}, emptyArray: []}',
+            './object = {string: nested, null: null, bool: true}',
+            './object/string = nested',
+            './object/null = null',
+            './object/bool = true',
+            './arrayValue = [text, 123, 45.6, true, false, null, '
+                '{deepKey: deepValue}, [1, 2, 3, {innerKey: innerValue}]]',
+            './arrayValue[0] = text',
+            './arrayValue[1] = 123',
+            './arrayValue[2] = 45.6',
+            './arrayValue[3] = true',
+            './arrayValue[4] = false',
+            './arrayValue[5] = null',
+            './arrayValue[6]/deepKey = deepValue',
+            './arrayValue[0] = 1',
+            './arrayValue[1] = 2',
+            './arrayValue[2] = 3',
+            './arrayValue[3]/innerKey = innerValue',
+            './numbers = {positive: 100, '
+                'negative: -50, floating: 0.001, scientific: 1000000.0}',
+            './numbers/positive = 100',
+            './numbers/negative = -50',
+            './numbers/floating = 0.001',
+            './numbers/scientific = 1000000.0',
+            './emptyObject = {}',
+            './emptyArray = []',
           ]);
         });
       });

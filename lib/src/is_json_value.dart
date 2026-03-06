@@ -17,6 +17,14 @@ bool isJsonValue(dynamic a) {
     }
     return true;
   } else {
-    return a is String || a is num || a is bool || a == null;
+    return isSimpleJsonValue(a);
   }
 }
+
+/// Returns true if value is a simple JSON value
+bool isSimpleJsonValue(dynamic a) =>
+    a is String || a is num || a is bool || a == null;
+
+/// Returns true if value is a complex JSON value
+bool isComplexJsonValue(dynamic a) =>
+    a is Map<String, dynamic> || a is List<dynamic>;
