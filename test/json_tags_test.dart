@@ -9,6 +9,17 @@ import 'package:test/test.dart';
 
 void main() {
   group('JsonTags', () {
+    group('manage', () {
+      test('manages json tags for a given JSON', () {
+        final json = Json();
+        final jsonTags = JsonTags.manage(json);
+        jsonTags.addAll(['tag0', 'tag1']);
+        expect(json, {
+          'tags': ['tag0', 'tag1'],
+        });
+      });
+    });
+
     group('creates no JSON tags entry', () {
       test('when null', () {
         final data = JsonTags.example(tags: null);

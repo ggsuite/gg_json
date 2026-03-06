@@ -23,6 +23,11 @@ extension type JsonTags._(Json data) implements Json {
     return JsonTags._(data.deepCopy());
   }
 
+  /// Manages a given json structure
+  factory JsonTags.manage(Json data) {
+    return JsonTags._(data);
+  }
+
   /// Creates an example [JsonTags].
   factory JsonTags.example({Iterable<String>? tags}) => JsonTags(tags: tags);
 
