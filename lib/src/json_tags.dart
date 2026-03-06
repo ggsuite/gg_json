@@ -28,37 +28,37 @@ extension type JsonTags._(Json data) implements Json {
 
   // ...........................................................................
   /// Returns the tags
-  List<String> get tags =>
+  List<String> get all =>
       data.getOrNull<List<dynamic>>('tags')?.cast<String>() ?? [];
 
   /// Returns true if the [JsonTags] has the given tag.
-  bool hasTag(String tag) => tags.contains(tag);
+  bool contains(String tag) => all.contains(tag);
 
   /// Returns true if the [JsonTags] has all the given tags.
-  bool hasTags(Iterable<String> tags) => tags.every(this.tags.contains);
+  bool containsAll(Iterable<String> tags) => tags.every(all.contains);
 
   /// Add tags to the [JsonTags].
-  void addTags(Iterable<String> newTags) {
+  void addAll(Iterable<String> newTags) {
     _throwWhenwWrongTag(newTags);
     if (newTags.isEmpty) return;
-    final currentTags = tags;
+    final currentTags = all;
     currentTags.addAll(newTags);
     this['tags'] = currentTags.toList();
   }
 
   /// Add a tag to the [JsonTags].
-  void addTag(String tag) => addTags({tag});
+  void add(String tag) => addAll({tag});
 
   /// Remove tags from the [JsonTags].
-  void removeTags(Iterable<String> tagsToRemove) {
+  void removeAll(Iterable<String> tagsToRemove) {
     if (tagsToRemove.isEmpty) return;
-    final currentTags = tags;
+    final currentTags = all;
     currentTags.removeWhere(tagsToRemove.contains);
     this['tags'] = currentTags.toList();
   }
 
   /// Remove a tag from the [JsonTags].
-  void removeTag(String tag) => removeTags({tag});
+  void remove(String tag) => removeAll({tag});
 
   // ...........................................................................
   static final _tagRegExp = RegExp(r'[^a-zA-Z0-9]');

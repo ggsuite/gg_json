@@ -25,50 +25,50 @@ void main() {
       test('returns empty set when no tags are set', () {
         final data = JsonTags.example();
         data.remove('tags');
-        expect(data.tags, <String>{});
+        expect(data.all, <String>{});
       });
 
       test('returns the tags that were set', () {
         final data = JsonTags.example(tags: ['tag1', 'tag2']);
-        expect(data.tags, {'tag1', 'tag2'});
+        expect(data.all, {'tag1', 'tag2'});
       });
     });
 
-    group('hasTag', () {
+    group('contains', () {
       test('returns true when tag exists', () {
         final data = JsonTags.example(tags: ['tag1', 'tag2']);
-        expect(data.hasTag('tag1'), isTrue);
+        expect(data.contains('tag1'), isTrue);
       });
 
       test('returns false when tag does not exist', () {
         final data = JsonTags.example(tags: ['tag1']);
-        expect(data.hasTag('tag2'), isFalse);
+        expect(data.contains('tag2'), isFalse);
       });
     });
 
-    group('hasTags', () {
+    group('containsAll', () {
       test('returns true when all tags exist', () {
         final data = JsonTags.example(tags: ['tag1', 'tag2', 'tag3']);
-        expect(data.hasTags(['tag1', 'tag2']), isTrue);
+        expect(data.containsAll(['tag1', 'tag2']), isTrue);
       });
 
       test('returns false when any tag is missing', () {
         final data = JsonTags.example(tags: ['tag1', 'tag2']);
-        expect(data.hasTags(['tag1', 'tag3']), isFalse);
+        expect(data.containsAll(['tag1', 'tag3']), isFalse);
       });
     });
 
-    group('addTag', () {
+    group('add', () {
       test('adds a new tag', () {
         final data = JsonTags.example(tags: ['tag1']);
-        data.addTag('tag2');
-        expect(data.tags, {'tag1', 'tag2'});
+        data.add('tag2');
+        expect(data.all, {'tag1', 'tag2'});
       });
 
       test('does not duplicate existing tag', () {
         final data = JsonTags.example(tags: ['tag1']);
-        data.addTag('tag1');
-        expect(data.tags, {'tag1'});
+        data.add('tag1');
+        expect(data.all, {'tag1'});
       });
 
       group('throws, when tags', () {
@@ -98,45 +98,45 @@ void main() {
       });
     });
 
-    group('addTags', () {
+    group('addAll', () {
       test('adds multiple new tags', () {
         final data = JsonTags.example(tags: ['tag1']);
-        data.addTags(['tag2', 'tag3']);
-        expect(data.tags, {'tag1', 'tag2', 'tag3'});
+        data.addAll(['tag2', 'tag3']);
+        expect(data.all, {'tag1', 'tag2', 'tag3'});
       });
 
       test('handles duplicate tags in input', () {
         final data = JsonTags.example(tags: ['tag1']);
-        data.addTags(['tag2', 'tag1', 'tag3']);
-        expect(data.tags, {'tag1', 'tag2', 'tag3'});
+        data.addAll(['tag2', 'tag1', 'tag3']);
+        expect(data.all, {'tag1', 'tag2', 'tag3'});
       });
     });
 
     group('removeTag', () {
       test('removes an existing tag', () {
         final data = JsonTags.example(tags: ['tag1', 'tag2']);
-        data.removeTag('tag1');
-        expect(data.tags, {'tag2'});
+        data.remove('tag1');
+        expect(data.all, {'tag2'});
       });
 
       test('does nothing if tag does not exist', () {
         final data = JsonTags.example(tags: ['tag1']);
-        data.removeTag('tag2');
-        expect(data.tags, {'tag1'});
+        data.remove('tag2');
+        expect(data.all, {'tag1'});
       });
     });
 
-    group('removeTags', () {
+    group('removeAll', () {
       test('removes multiple existing tags', () {
         final data = JsonTags.example(tags: ['tag1', 'tag2', 'tag3']);
-        data.removeTags(['tag1', 'tag3']);
-        expect(data.tags, {'tag2'});
+        data.removeAll(['tag1', 'tag3']);
+        expect(data.all, {'tag2'});
       });
 
       test('handles non-existing tags gracefully', () {
         final data = JsonTags.example(tags: ['tag1', 'tag2']);
-        data.removeTags(['tag3', 'tag1']);
-        expect(data.tags, {'tag2'});
+        data.removeAll(['tag3', 'tag1']);
+        expect(data.all, {'tag2'});
       });
     });
 
@@ -152,7 +152,7 @@ void main() {
       });
 
       final tags = JsonTags.fromJson(json);
-      expect(tags.tags, ['a', 'b', 'c']);
+      expect(tags.all, ['a', 'b', 'c']);
     });
   });
 }
