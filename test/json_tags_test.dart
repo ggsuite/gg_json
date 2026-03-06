@@ -121,6 +121,12 @@ void main() {
         data.addAll(['tag2', 'tag1', 'tag3']);
         expect(data.all, {'tag1', 'tag2', 'tag3'});
       });
+
+      test('does not duplicate existing tag', () {
+        final data = JsonTags.example(tags: ['tag1']);
+        data.addAll(['tag1']);
+        expect(data.all, ['tag1']);
+      });
     });
 
     group('removeTag', () {

@@ -48,7 +48,7 @@ extension type JsonTags._(Json data) implements Json {
     if (newTags.isEmpty) return;
     final currentTags = all;
     currentTags.addAll(newTags);
-    this['tags'] = currentTags.toList();
+    this['tags'] = currentTags.toSet().toList();
   }
 
   /// Add a tag to the [JsonTags].

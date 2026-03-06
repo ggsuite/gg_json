@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.18] - 2026-03-06
+
+### Fixed
+
+- Fix: Tags were added multiple times
+
 ## [3.0.17] - 2026-03-06
 
 ### Added
@@ -121,6 +127,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.0.18]: https://github.com/inlavigo/gg_json/compare/3.0.17...3.0.18
 [3.0.17]: https://github.com/inlavigo/gg_json/compare/3.0.16...3.0.17
 [3.0.16]: https://github.com/inlavigo/gg_json/compare/3.0.15...3.0.16
 [3.0.15]: https://github.com/inlavigo/gg_json/compare/3.0.14...3.0.15
