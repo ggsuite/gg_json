@@ -20,17 +20,6 @@ void main() {
       expect(parseJsonPath('a/b.c/d'), ['a', 'b', 'c', 'd']);
       expect(parseJsonPath('a/b[0].c/d'), ['a', 'b[0]', 'c', 'd']);
     });
-
-    test('throws on invalid characters', () {
-      var message = '';
-      try {
-        parseJsonPath('a/b c/d');
-      } catch (e) {
-        message = (e as dynamic).message as String;
-      }
-
-      expect(message, 'Invalid chars in path segment "b c".');
-    });
   });
 
   group('parseArrayIndex', () {

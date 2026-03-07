@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.20] - 2026-03-07
+
+### Changed
+
+- Don't throw on non letters oder numbers in JSON key
+
 ## [3.0.19] - 2026-03-06
 
 ### Changed
@@ -133,6 +139,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.0.20]: https://github.com/inlavigo/gg_json/compare/3.0.19...3.0.20
 [3.0.19]: https://github.com/inlavigo/gg_json/compare/3.0.18...3.0.19
 [3.0.18]: https://github.com/inlavigo/gg_json/compare/3.0.17...3.0.18
 [3.0.17]: https://github.com/inlavigo/gg_json/compare/3.0.16...3.0.17
