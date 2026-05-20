@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.1] - 2026-05-20
+
+### Changed
+
+- Allow JSON modification while visiting
+
 ## [3.1.0] - 2026-05-20
 
 ### Added
@@ -145,6 +151,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.1.1]: https://github.com/inlavigo/gg_json/compare/3.1.0...3.1.1
 [3.1.0]: https://github.com/inlavigo/gg_json/compare/3.0.20...3.1.0
 [3.0.20]: https://github.com/inlavigo/gg_json/compare/3.0.19...3.0.20
 [3.0.19]: https://github.com/inlavigo/gg_json/compare/3.0.18...3.0.19

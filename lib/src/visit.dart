@@ -37,16 +37,24 @@ extension JsonVisit on Json {
 // .............................................................................
 void _visit(dynamic node, List<dynamic> ancestors, VisitProp callback) {
   if (node is Map<String, dynamic>) {
-    for (final key in node.keys) {
+    // Snapshot keys so the callback may add, remove or rename entries on
+    // [node] without triggering ConcurrentModificationError.
+    for (final key in [...node.keys]) {
+      if (!node.containsKey(key)) continue;
       final value = node[key];
       callback(key: key, value: value, parent: node, ancestors: ancestors);
+      // Recurse into the value the callback was given, even if the parent's
+      // key has since been renamed or removed. This keeps traversal
+      // predictable: every value the callback saw is also walked.
       if (value is Map<String, dynamic> || value is List) {
         _visit(value, [value, ...ancestors], callback);
       }
     }
   } else if (node is List) {
-    for (var i = 0; i < node.length; i++) {
-      final value = node[i];
+    // Snapshot items so the callback may mutate [node] during iteration.
+    final items = List<dynamic>.of(node);
+    for (var i = 0; i < items.length; i++) {
+      final value = items[i];
       callback(key: i, value: value, parent: node, ancestors: ancestors);
       if (value is Map<String, dynamic> || value is List) {
         _visit(value, [value, ...ancestors], callback);

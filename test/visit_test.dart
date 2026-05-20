@@ -200,6 +200,110 @@ void main() {
       expect(called, isFalse);
     });
 
+    group('allows mutation during iteration', () {
+      test('renames map keys while visiting', () {
+        final json = <String, dynamic>{
+          'a': 1,
+          'b': {'c': 2, 'd': 3},
+        };
+
+        json.visit(({key, value, parent, ancestors}) {
+          if (key is String && parent is Map<String, dynamic>) {
+            parent.remove(key);
+            parent['renamed_$key'] = value;
+          }
+        });
+
+        expect(json, {
+          'renamed_a': 1,
+          'renamed_b': {'renamed_c': 2, 'renamed_d': 3},
+        });
+      });
+
+      test('removes map entries while visiting', () {
+        final json = <String, dynamic>{
+          'keep': 1,
+          'drop': 2,
+          'nested': {'keep': 3, 'drop': 4},
+        };
+
+        json.visit(({key, value, parent, ancestors}) {
+          if (key == 'drop' && parent is Map<String, dynamic>) {
+            parent.remove(key);
+          }
+        });
+
+        expect(json, {
+          'keep': 1,
+          'nested': {'keep': 3},
+        });
+      });
+
+      test('adds new entries to a map without revisiting them', () {
+        final json = <String, dynamic>{'a': 1, 'b': 2};
+        final visitedKeys = <dynamic>[];
+
+        json.visit(({key, value, parent, ancestors}) {
+          visitedKeys.add(key);
+          if (parent is Map<String, dynamic> && !parent.containsKey('added')) {
+            parent['added'] = 'late';
+          }
+        });
+
+        expect(visitedKeys, ['a', 'b']);
+        expect(json, {'a': 1, 'b': 2, 'added': 'late'});
+      });
+
+      test('allows removing items from a list while visiting', () {
+        final list = [1, 2, 3, 4];
+        final json = <String, dynamic>{'items': list};
+        final visitedValues = <dynamic>[];
+
+        json.visit(({key, value, parent, ancestors}) {
+          if (parent is List) {
+            visitedValues.add(value);
+            if (value == 2 || value == 3) {
+              parent.remove(value);
+            }
+          }
+        });
+
+        expect(visitedValues, [1, 2, 3, 4]);
+        expect(list, [1, 4]);
+      });
+
+      test('allows replacing items in a list while visiting', () {
+        final list = [1, 2, 3];
+        final json = <String, dynamic>{'items': list};
+
+        json.visit(({key, value, parent, ancestors}) {
+          if (parent is List && value is int) {
+            parent[key as int] = value * 10;
+          }
+        });
+
+        expect(list, [10, 20, 30]);
+      });
+
+      test('allows appending items to a list while visiting', () {
+        final list = <dynamic>[1, 2];
+        final json = <String, dynamic>{'items': list};
+        final visitedValues = <dynamic>[];
+
+        json.visit(({key, value, parent, ancestors}) {
+          if (parent is List) {
+            visitedValues.add(value);
+            if (value == 1) {
+              parent.add(99);
+            }
+          }
+        });
+
+        expect(visitedValues, [1, 2]);
+        expect(list, [1, 2, 99]);
+      });
+    });
+
     test('walks the full exampleJsonNested0 document', () {
       final keys = <dynamic>[];
       exampleJsonNested0.visit(({key, value, parent, ancestors}) {
