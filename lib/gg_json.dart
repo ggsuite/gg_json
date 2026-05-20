@@ -15,3 +15,4 @@ export 'src/json_tags.dart';
 export 'src/ls.dart';
 export 'src/parse_json_path.dart';
 export 'src/set_get_remove.dart';
+export 'src/visit.dart';
