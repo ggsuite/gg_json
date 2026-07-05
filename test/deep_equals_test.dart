@@ -61,5 +61,88 @@ void main() {
         });
       });
     });
+
+    group('with differing key order', () {
+      test('still returns true for the same content', () {
+        final a = {'x': 1, 'y': 2, 'z': 3};
+        final b = {'z': 3, 'x': 1, 'y': 2};
+        expect(deeplEquals(a, b), isTrue);
+      });
+
+      test('returns false when the content actually differs', () {
+        final a = {'x': 1, 'y': 2, 'z': 3};
+        final b = {'z': 3, 'x': 1, 'y': 99};
+        expect(deeplEquals(a, b), isFalse);
+      });
+
+      test('returns false when a null value in a is missing as a key in b', () {
+        // Same length and key order differs (forcing the lookup-based
+        // fallback path); 'y' is explicitly null in a but the key is
+        // entirely absent in b (b has 'w' instead), so the containsKey
+        // disambiguation for the null lookup must kick in.
+        final a = {'x': 1, 'y': null, 'z': 3};
+        final b = {'x': 1, 'w': null, 'z': 3};
+        expect(deeplEquals(a, b), isFalse);
+      });
+
+      test(
+        'returns true when a null value in a matches an explicit null in b',
+        () {
+          // Same keys, reordered, so the lookup-based fallback path runs;
+          // 'y' is null in both, and the key genuinely exists in b.
+          final a = {'x': 1, 'y': null, 'z': 3};
+          final b = {'z': 3, 'x': 1, 'y': null};
+          expect(deeplEquals(a, b), isTrue);
+        },
+      );
+
+      test(
+        'compares nested map values within the lookup-based fallback path',
+        () {
+          // Reordered top-level keys force the fallback path; the nested
+          // map value must still be compared deeply, both when equal and
+          // when it differs.
+          final aEqual = {
+            'x': 1,
+            'nested': {'a': 1, 'b': 2},
+          };
+          final bEqual = {
+            'nested': {'a': 1, 'b': 2},
+            'x': 1,
+          };
+          expect(deeplEquals(aEqual, bEqual), isTrue);
+
+          final bDifferent = {
+            'nested': {'a': 1, 'b': 99},
+            'x': 1,
+          };
+          expect(deeplEquals(aEqual, bDifferent), isFalse);
+        },
+      );
+
+      test(
+        'compares nested list values within the lookup-based fallback path',
+        () {
+          // Reordered top-level keys force the fallback path; the nested
+          // list value must still be compared deeply, both when equal and
+          // when it differs.
+          final aEqual = {
+            'x': 1,
+            'nested': [1, 2, 3],
+          };
+          final bEqual = {
+            'nested': [1, 2, 3],
+            'x': 1,
+          };
+          expect(deeplEquals(aEqual, bEqual), isTrue);
+
+          final bDifferent = {
+            'nested': [1, 2, 99],
+            'x': 1,
+          };
+          expect(deeplEquals(aEqual, bDifferent), isFalse);
+        },
+      );
+    });
   });
 }

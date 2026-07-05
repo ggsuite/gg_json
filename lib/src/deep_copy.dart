@@ -14,6 +14,77 @@ Json deepCopy(
   bool ignoreNonJsonObjects = false,
   bool Function(String key, dynamic value)? where,
 }) {
+  if (where == null && !throwOnNonJsonObjects && !ignoreNonJsonObjects) {
+    return _deepCopyFast(json);
+  }
+  return _deepCopyGeneral(
+    json,
+    throwOnNonJsonObjects,
+    ignoreNonJsonObjects,
+    where,
+  );
+}
+
+// .............................................................................
+/// Deep copies a JSON List.
+List<dynamic> deepCopyList(
+  List<dynamic> list, {
+  bool throwOnNonJsonObjects = true,
+  bool ignoreNonJsonObjects = false,
+  bool Function(String key, dynamic value)? where,
+}) {
+  if (where == null && !throwOnNonJsonObjects && !ignoreNonJsonObjects) {
+    return _deepCopyListFast(list);
+  }
+  return _deepCopyListGeneral(
+    list,
+    throwOnNonJsonObjects,
+    ignoreNonJsonObjects,
+    where,
+  );
+}
+
+// .............................................................................
+// Fast path: no filtering, no validation. Map.of / toList bulk-copy the
+// container (simple values come along for free); afterwards only nested
+// Maps/Lists are replaced by their deep copies.
+Json _deepCopyFast(Json json) {
+  final copy = Map<String, dynamic>.of(json);
+  json.forEach((key, value) {
+    if (value is Map<String, dynamic>) {
+      copy[key] = _deepCopyFast(value);
+    } else if (value is List) {
+      copy[key] = _deepCopyListFast(value);
+    }
+  });
+  return copy;
+}
+
+// .............................................................................
+List<dynamic> _deepCopyListFast(List<dynamic> list) {
+  // List<dynamic>.of (not toList) so a typed source list cannot make the
+  // copy reject retyped nested elements.
+  final copy = List<dynamic>.of(list);
+  final length = copy.length;
+  for (var i = 0; i < length; i++) {
+    final element = copy[i];
+    if (element is Map<String, dynamic>) {
+      copy[i] = _deepCopyFast(element);
+    } else if (element is List) {
+      copy[i] = _deepCopyListFast(element);
+    }
+  }
+  return copy;
+}
+
+// .............................................................................
+// General path: handles where filters and non-JSON value policies.
+Json _deepCopyGeneral(
+  Json json,
+  bool throwOnNonJsonObjects,
+  bool ignoreNonJsonObjects,
+  bool Function(String key, dynamic value)? where,
+) {
   final copy = <String, dynamic>{};
   for (final entry in json.entries) {
     if (where != null && where(entry.key, entry.value) == false) {
@@ -23,18 +94,18 @@ Json deepCopy(
     final key = entry.key;
     final value = entry.value;
     if (value is Map<String, dynamic>) {
-      copy[key] = deepCopy(
+      copy[key] = _deepCopyGeneral(
         value,
-        throwOnNonJsonObjects: throwOnNonJsonObjects,
-        ignoreNonJsonObjects: ignoreNonJsonObjects,
-        where: where,
+        throwOnNonJsonObjects,
+        ignoreNonJsonObjects,
+        where,
       );
     } else if (value is List<dynamic>) {
-      copy[key] = deepCopyList(
+      copy[key] = _deepCopyListGeneral(
         value,
-        throwOnNonJsonObjects: throwOnNonJsonObjects,
-        ignoreNonJsonObjects: ignoreNonJsonObjects,
-        where: where,
+        throwOnNonJsonObjects,
+        ignoreNonJsonObjects,
+        where,
       );
     } else {
       // Value is neither Map nor List here, so the simple check suffices.
@@ -58,31 +129,30 @@ Json deepCopy(
 }
 
 // .............................................................................
-/// Deep copies a JSON List.
-List<dynamic> deepCopyList(
-  List<dynamic> list, {
-  bool throwOnNonJsonObjects = true,
-  bool ignoreNonJsonObjects = false,
+List<dynamic> _deepCopyListGeneral(
+  List<dynamic> list,
+  bool throwOnNonJsonObjects,
+  bool ignoreNonJsonObjects,
   bool Function(String key, dynamic value)? where,
-}) {
+) {
   final copy = <dynamic>[];
   for (final element in list) {
     if (element is Map<String, dynamic>) {
       copy.add(
-        deepCopy(
+        _deepCopyGeneral(
           element,
-          throwOnNonJsonObjects: throwOnNonJsonObjects,
-          ignoreNonJsonObjects: ignoreNonJsonObjects,
-          where: where,
+          throwOnNonJsonObjects,
+          ignoreNonJsonObjects,
+          where,
         ),
       );
     } else if (element is List<dynamic>) {
       copy.add(
-        deepCopyList(
+        _deepCopyListGeneral(
           element,
-          throwOnNonJsonObjects: throwOnNonJsonObjects,
-          ignoreNonJsonObjects: ignoreNonJsonObjects,
-          where: where,
+          throwOnNonJsonObjects,
+          ignoreNonJsonObjects,
+          where,
         ),
       );
     } else {

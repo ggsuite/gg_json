@@ -93,5 +93,33 @@ void main() {
         expect(result, json);
       });
     });
+
+    group('deepCopyList', () {
+      test(
+        'uses the fast path when no filters or validation are requested',
+        () {
+          final list = <dynamic>[
+            1,
+            'text',
+            {'nested': 'map'},
+            [
+              2,
+              {'deep': 'list'},
+            ],
+          ];
+
+          final result = deepCopyList(list, throwOnNonJsonObjects: false);
+
+          expect(result, list);
+          expect(identical(result, list), isFalse);
+          expect(identical(result[2], list[2]), isFalse);
+          expect(identical(result[3], list[3]), isFalse);
+
+          // The copy is deeply independent.
+          (result[2] as Map<String, dynamic>)['nested'] = 'changed';
+          expect((list[2] as Map<String, dynamic>)['nested'], 'map');
+        },
+      );
+    });
   });
 }

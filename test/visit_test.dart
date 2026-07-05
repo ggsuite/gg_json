@@ -13,12 +13,13 @@ void main() {
       final json = {'a': 10};
       final calls = <Map<String, dynamic>>[];
 
-      json.visit(({key, value, parent, ancestors}) {
+      json.visit((key, value, parent, ancestors) {
         calls.add({
           'key': key,
           'value': value,
           'parent': parent,
-          'ancestors': ancestors,
+          // The ancestors argument is a live view. Copy it when retaining.
+          'ancestors': List<dynamic>.of(ancestors),
         });
       });
 
@@ -37,12 +38,12 @@ void main() {
       final json = {'a': inner};
       final calls = <Map<String, dynamic>>[];
 
-      json.visit(({key, value, parent, ancestors}) {
+      json.visit((key, value, parent, ancestors) {
         calls.add({
           'key': key,
           'value': value,
           'parent': parent,
-          'ancestors': List<dynamic>.from(ancestors!),
+          'ancestors': List<dynamic>.of(ancestors),
         });
       });
 
@@ -67,12 +68,12 @@ void main() {
       final json = {'a': list};
       final calls = <Map<String, dynamic>>[];
 
-      json.visit(({key, value, parent, ancestors}) {
+      json.visit((key, value, parent, ancestors) {
         calls.add({
           'key': key,
           'value': value,
           'parent': parent,
-          'ancestors': List<dynamic>.from(ancestors!),
+          'ancestors': List<dynamic>.of(ancestors),
         });
       });
 
@@ -106,12 +107,12 @@ void main() {
 
       final calls = <Map<String, dynamic>>[];
 
-      json.visit(({key, value, parent, ancestors}) {
+      json.visit((key, value, parent, ancestors) {
         calls.add({
           'key': key,
           'value': value,
           'parent': parent,
-          'ancestors': List<dynamic>.from(ancestors!),
+          'ancestors': List<dynamic>.of(ancestors),
         });
       });
 
@@ -155,12 +156,12 @@ void main() {
       final json = {'a': outerList};
       final calls = <Map<String, dynamic>>[];
 
-      json.visit(({key, value, parent, ancestors}) {
+      json.visit((key, value, parent, ancestors) {
         calls.add({
           'key': key,
           'value': value,
           'parent': parent,
-          'ancestors': List<dynamic>.from(ancestors!),
+          'ancestors': List<dynamic>.of(ancestors),
         });
       });
 
@@ -194,7 +195,7 @@ void main() {
 
     test('does not invoke the callback for an empty object', () {
       var called = false;
-      <String, dynamic>{}.visit(({key, value, parent, ancestors}) {
+      <String, dynamic>{}.visit((key, value, parent, ancestors) {
         called = true;
       });
       expect(called, isFalse);
@@ -207,7 +208,7 @@ void main() {
           'b': {'c': 2, 'd': 3},
         };
 
-        json.visit(({key, value, parent, ancestors}) {
+        json.visit((key, value, parent, ancestors) {
           if (key is String && parent is Map<String, dynamic>) {
             parent.remove(key);
             parent['renamed_$key'] = value;
@@ -227,7 +228,7 @@ void main() {
           'nested': {'keep': 3, 'drop': 4},
         };
 
-        json.visit(({key, value, parent, ancestors}) {
+        json.visit((key, value, parent, ancestors) {
           if (key == 'drop' && parent is Map<String, dynamic>) {
             parent.remove(key);
           }
@@ -243,7 +244,7 @@ void main() {
         final json = <String, dynamic>{'a': 1, 'b': 2};
         final visitedKeys = <dynamic>[];
 
-        json.visit(({key, value, parent, ancestors}) {
+        json.visit((key, value, parent, ancestors) {
           visitedKeys.add(key);
           if (parent is Map<String, dynamic> && !parent.containsKey('added')) {
             parent['added'] = 'late';
@@ -259,7 +260,7 @@ void main() {
         final json = <String, dynamic>{'items': list};
         final visitedValues = <dynamic>[];
 
-        json.visit(({key, value, parent, ancestors}) {
+        json.visit((key, value, parent, ancestors) {
           if (parent is List) {
             visitedValues.add(value);
             if (value == 2 || value == 3) {
@@ -276,7 +277,7 @@ void main() {
         final list = [1, 2, 3];
         final json = <String, dynamic>{'items': list};
 
-        json.visit(({key, value, parent, ancestors}) {
+        json.visit((key, value, parent, ancestors) {
           if (parent is List && value is int) {
             parent[key as int] = value * 10;
           }
@@ -285,12 +286,42 @@ void main() {
         expect(list, [10, 20, 30]);
       });
 
+      test('delivers fresh values for siblings updated while visiting', () {
+        final json = <String, dynamic>{'a': 1, 'b': 2};
+        final visitedValues = <dynamic>[];
+
+        json.visit((key, value, parent, ancestors) {
+          visitedValues.add(value);
+          if (key == 'a' && parent is Map<String, dynamic>) {
+            parent['b'] = 99;
+          }
+        });
+
+        expect(visitedValues, [1, 99]);
+      });
+
+      test('skips a nested single entry removed by the parent callback', () {
+        final json = <String, dynamic>{
+          'a': {'b': 1},
+        };
+        final visitedKeys = <dynamic>[];
+
+        json.visit((key, value, parent, ancestors) {
+          visitedKeys.add(key);
+          if (key == 'a' && value is Map<String, dynamic>) {
+            value.remove('b');
+          }
+        });
+
+        expect(visitedKeys, ['a']);
+      });
+
       test('allows appending items to a list while visiting', () {
         final list = <dynamic>[1, 2];
         final json = <String, dynamic>{'items': list};
         final visitedValues = <dynamic>[];
 
-        json.visit(({key, value, parent, ancestors}) {
+        json.visit((key, value, parent, ancestors) {
           if (parent is List) {
             visitedValues.add(value);
             if (value == 1) {
@@ -306,7 +337,7 @@ void main() {
 
     test('walks the full exampleJsonNested0 document', () {
       final keys = <dynamic>[];
-      exampleJsonNested0.visit(({key, value, parent, ancestors}) {
+      exampleJsonNested0.visit((key, value, parent, ancestors) {
         keys.add(key);
       });
 
@@ -318,6 +349,80 @@ void main() {
       expect(keys, contains('scientific'));
       expect(keys, contains(0));
       expect(keys, contains(7));
+    });
+
+    group('ancestors', () {
+      test('is a read-only view that throws on mutation', () {
+        final json = {
+          'a': {'b': 10},
+        };
+
+        json.visit((key, value, parent, ancestors) {
+          expect(() => ancestors[0] = 'x', throwsUnsupportedError);
+          expect(() => ancestors.length = 0, throwsUnsupportedError);
+          expect(() => ancestors.add('x'), throwsUnsupportedError);
+          expect(() => ancestors.removeLast(), throwsUnsupportedError);
+          expect(() => ancestors.clear(), throwsUnsupportedError);
+        });
+      });
+
+      test('is ordered nearest-first, ending with the root', () {
+        final inner = {'c': 1};
+        final middle = {'b': inner};
+        final json = {'a': middle};
+
+        json.visit((key, value, parent, ancestors) {
+          if (key == 'c') {
+            expect(ancestors[0], same(inner));
+            expect(ancestors[1], same(middle));
+            expect(ancestors[2], same(json));
+            expect(ancestors.length, 3);
+            expect(ancestors.first, same(parent));
+            expect(ancestors.last, same(json));
+          }
+        });
+      });
+
+      test('is a live view that must be copied when retained', () {
+        final json = {
+          'a': {'b': 10},
+          'c': 20,
+        };
+
+        List<dynamic>? retained;
+        json.visit((key, value, parent, ancestors) {
+          if (key == 'b') {
+            retained = ancestors; // Not copied: stays live.
+            expect(retained, hasLength(2));
+          }
+        });
+
+        // After the traversal left the nested map, the retained live view
+        // reflects the current traversal stack, not the state at retention.
+        expect(retained, hasLength(1));
+        expect(retained!.single, same(json));
+      });
+
+      test('grows the ancestors stack beyond its initial capacity', () {
+        // Build a chain deeper than the ancestors stack's initial capacity
+        // so it must reallocate and copy at least once during traversal.
+        const depth = 100;
+        Json node = {'leaf': 0};
+        for (var i = depth - 1; i >= 0; i--) {
+          node = {'a$i': node};
+        }
+
+        var leafAncestorsLength = -1;
+        node.visit((key, value, parent, ancestors) {
+          if (key == 'leaf') {
+            leafAncestorsLength = ancestors.length;
+            expect(ancestors.first, same(parent));
+            expect(ancestors.last, same(node));
+          }
+        });
+
+        expect(leafAncestorsLength, depth + 1);
+      });
     });
   });
 }

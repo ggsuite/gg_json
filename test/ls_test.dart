@@ -185,6 +185,162 @@ void main() {
         });
       });
 
+      group('with special characters and long paths', () {
+        test('handles keys with non Latin-1 characters', () {
+          expect(
+            {
+              '日本語': {'inner': 1},
+              'ä': 2,
+            }.ls(),
+            ['.', './日本語', './日本語/inner', './ä'],
+          );
+        });
+
+        test('handles a nested map two levels under a non Latin-1 key', () {
+          expect(
+            {
+              '日本語': {
+                'a': {'b': 1},
+              },
+            }.ls(),
+            ['.', './日本語', './日本語/a', './日本語/a/b'],
+          );
+        });
+
+        test('writes simple values nested in a non Latin-1 key with '
+            'writeValues', () {
+          expect(
+            {
+              '日本語': {'a': 5},
+            }.ls(writeValues: true),
+            ['.', './日本語', './日本語/a = 5'],
+          );
+        });
+
+        test('handles a nested list two levels under a non Latin-1 key', () {
+          expect(
+            {
+              '日本語': {
+                'a': [1, 2],
+              },
+            }.ls(writeValues: true),
+            ['.', './日本語', './日本語/a', './日本語/a[0] = 1', './日本語/a[1] = 2'],
+          );
+        });
+
+        test('handles a list of lists under a non Latin-1 key', () {
+          // Nested lists reuse the outer list's path segment, matching the
+          // behavior of the plain (Latin-1) fast path.
+          expect(
+            {
+              '日本語': [
+                [1, 2],
+                [3, 4],
+              ],
+            }.ls(writeValues: true),
+            [
+              '.',
+              './日本語',
+              './日本語[0] = 1',
+              './日本語[1] = 2',
+              './日本語[0] = 3',
+              './日本語[1] = 4',
+            ],
+          );
+        });
+
+        test('handles a map inside a list under a non Latin-1 key', () {
+          expect(
+            {
+              '日本語': [
+                {'a': 1},
+              ],
+            }.ls(writeValues: true),
+            ['.', './日本語', './日本語[0]/a = 1'],
+          );
+        });
+
+        test(
+          'handles list items under a non Latin-1 key without writeValues',
+          () {
+            expect(
+              {
+                '日本語': [1, 2],
+              }.ls(),
+              ['.', './日本語', './日本語[0]', './日本語[1]'],
+            );
+          },
+        );
+
+        test('handles a simple value under a non Latin-1 key without '
+            'writeValues', () {
+          expect({'日本語': 5}.ls(), ['.', './日本語']);
+        });
+
+        test('handles a list value under a non Latin-1 key', () {
+          expect(
+            {
+              '日本語': [10, 20],
+            }.ls(writeValues: true),
+            ['.', './日本語', './日本語[0] = 10', './日本語[1] = 20'],
+          );
+        });
+
+        test('handles a simple value under a non Latin-1 key', () {
+          expect({'日本語': 5}.ls(writeValues: true), ['.', './日本語 = 5']);
+        });
+
+        test('handles values with non Latin-1 characters', () {
+          expect({'a': 'wörld', 'b': '→', 'c': 12}.ls(writeValues: true), [
+            '.',
+            './a = wörld',
+            './b = →',
+            './c = 12',
+          ]);
+        });
+
+        test('handles line prefixes with non Latin-1 characters', () {
+          expect({'a': 1}.ls(linePrefix: '→ '), ['→ .', '→ ./a']);
+        });
+
+        test('handles list indices with more than one digit', () {
+          final paths = {
+            'l': List<dynamic>.generate(12, (i) => i),
+          }.ls(writeValues: true);
+          expect(paths, contains('./l[10] = 10'));
+          expect(paths, contains('./l[11] = 11'));
+        });
+
+        test('handles paths longer than the initial buffer', () {
+          final keys = List<String>.generate(
+            40,
+            (i) => 'segment${i.toString().padLeft(2, '0')}',
+          );
+          final json = <String, dynamic>{};
+          var node = json;
+          for (final key in keys.take(39)) {
+            final child = <String, dynamic>{};
+            node[key] = child;
+            node = child;
+          }
+          node[keys.last] = 1;
+
+          final paths = json.ls(writeValues: true);
+          expect(paths.last, './${keys.join('/')} = 1');
+        });
+
+        test('grows the path buffer across multiple doublings', () {
+          // A single very long key forces one buffer request that jumps
+          // past the initial 256-code-unit buffer by more than a single
+          // doubling, so the growth loop must iterate more than once.
+          final longKey = 'k' * 3000;
+          final json = {longKey: 1};
+
+          final paths = json.ls(writeValues: true);
+          expect(paths, ['.', './$longKey = 1']);
+        });
+      });
+
       group('with alsoComplexValues true', () {
         test('writes also complex values', () {
           expect(exampleJson.ls(writeValues: true, alsoComplexValues: true), [
@@ -221,6 +377,15 @@ void main() {
           ]);
         });
       });
+    });
+
+    test('applies linePrefix on the filtered (where/exclude) path too', () {
+      final json = {'a': 1, 'b': 2};
+      expect(json.ls(linePrefix: '>> ', where: ({key, value, path}) => true), [
+        '>> .',
+        '>> ./a',
+        '>> ./b',
+      ]);
     });
   });
 }

@@ -114,6 +114,146 @@ void main() {
             ],
           });
         });
+
+        test(
+          'throws when an existing array item is null and extend is false',
+          () {
+            final json = <String, dynamic>{
+              'e': [1, null, 3],
+            };
+
+            var message = <String>[];
+            try {
+              json.set<int>('e[1]', 5);
+            } catch (e) {
+              message = ((e as dynamic).message as String).split('\n');
+            }
+
+            expect(message.first, 'Path segment "e" of "e[1]" does not exist.');
+          },
+        );
+
+        test('grows a nested array at a non-first index while descending', () {
+          // Note: the lists must be declared List<dynamic> here. A typed
+          // literal like `[[10, 20]]` (inferred List<List<int>>) hits an
+          // unrelated, pre-existing bug where growing the inner array
+          // throws a type error when assigning the grown List<dynamic>
+          // back into the more specifically typed parent slot.
+          final json = <String, dynamic>{
+            'e': <dynamic>[
+              <dynamic>[10, 20],
+            ],
+          };
+
+          json.set<int>('e[0][5]/y', 5, extend: true);
+
+          expect(json, {
+            'e': [
+              [
+                10,
+                20,
+                null,
+                null,
+                null,
+                {'y': 5},
+              ],
+            ],
+          });
+        });
+
+        test('grows an array at its first index while descending into it', () {
+          final json = <String, dynamic>{
+            'x': {'e': <dynamic>[]},
+          };
+
+          json.set<int>('x/e[2]/y', 5, extend: true);
+
+          expect(json, {
+            'x': {
+              'e': [
+                null,
+                null,
+                {'y': 5},
+              ],
+            },
+          });
+        });
+
+        test(
+          'throws when descending into a null array item without extend',
+          () {
+            final json = <String, dynamic>{
+              'x': {
+                'e': <dynamic>[null, 2],
+              },
+            };
+
+            var message = <String>[];
+            try {
+              json.set<int>('x/e[0]/y', 5);
+            } catch (e) {
+              message = ((e as dynamic).message as String).split('\n');
+            }
+
+            expect(
+              message.first,
+              'Path segment "e" of "x/e[0]/y" does not exist.',
+            );
+          },
+        );
+
+        test(
+          'creates an intermediate nested array at a multi-index segment',
+          () {
+            final json = <String, dynamic>{
+              'x': {
+                'e': <dynamic>[null, 2],
+              },
+            };
+
+            json.set<int>('x/e[0][1]/y', 5, extend: true);
+
+            expect(json, {
+              'x': {
+                'e': [
+                  [
+                    null,
+                    {'y': 5},
+                  ],
+                  2,
+                ],
+              },
+            });
+          },
+        );
+
+        test('throws when an array segment key does not exist and extend '
+            'is false', () {
+          final json = <String, dynamic>{'a': 1};
+
+          var message = <String>[];
+          try {
+            json.set<int>('e[0]/y', 5);
+          } catch (e) {
+            message = ((e as dynamic).message as String).split('\n');
+          }
+
+          expect(message.first, 'Path segment "e" of "e[0]/y" does not exist.');
+        });
+
+        test('creates an array segment key that does not exist when extend '
+            'is true', () {
+          final json = <String, dynamic>{'a': 1};
+
+          json.set<int>('e[0]/y', 5, extend: true);
+
+          expect(json, {
+            'a': 1,
+            'e': [
+              {'y': 5},
+            ],
+          });
+        });
       });
 
       test('throws when an existing value is not of type T', () {
@@ -189,6 +329,28 @@ void main() {
         ]);
       });
 
+      test('throws when an intermediate path segment does not exist', () {
+        final json = <String, dynamic>{
+          'a': {'b': 1},
+        };
+
+        var message = <String>[];
+        try {
+          json.set<int>('a/x/y', 2);
+        } catch (e) {
+          message = ((e as dynamic).message as String).split('\n');
+        }
+
+        expect(message, [
+          'Path segment "x" of "a/x/y" does not exist.',
+          '',
+          'Available paths:',
+          '  - .',
+          '  - ./a',
+          '  - ./a/b',
+        ]);
+      });
+
       test('updates existing path elements', () {
         final json = <String, dynamic>{
           'a': {
@@ -214,6 +376,21 @@ void main() {
           expect(json, {
             'e': [1, 20, 3],
           });
+        });
+
+        test('throws when the new item has a different type', () {
+          final json = <String, dynamic>{
+            'e': [1, 2, 3],
+          };
+
+          var message = '';
+          try {
+            json.set<String>('e[1]', 'x');
+          } catch (e) {
+            message = (e as dynamic).message.toString();
+          }
+
+          expect(message, 'Cannot write key "e": int != String.');
         });
 
         test('set last item of an arry', () {
@@ -316,6 +493,30 @@ void main() {
 
         final val = json.getOrNull<int>('b/d');
         expect(val, isNull);
+      });
+
+      test('throws for non-existing path when throwWhenNotFound is true', () {
+        final json = <String, dynamic>{
+          'a': 1,
+          'b': {'c': 3},
+        };
+
+        var message = <String>[];
+        try {
+          json.getOrNull<int>('b/d', throwWhenNotFound: true);
+        } catch (e) {
+          message = ((e as dynamic).message as String).split('\n');
+        }
+
+        expect(message, [
+          'Value at path "b/d" not found.',
+          '',
+          'Available paths:',
+          '  - .',
+          '  - ./a',
+          '  - ./b',
+          '  - ./b/c',
+        ]);
       });
     });
 
@@ -472,6 +673,28 @@ void main() {
           expect(json, {
             'a': {'b': 1},
           });
+        });
+
+        test('- with a non-existing intermediate path segment', () {
+          final json = <String, dynamic>{
+            'a': {'b': 1},
+          };
+          json.removeValue('/x/y');
+          expect(json, {
+            'a': {'b': 1},
+          });
+        });
+
+        test('- clears its path cache once the entry limit is reached', () {
+          final json = <String, dynamic>{'a': 1};
+          for (var i = 0; i < 5000; i++) {
+            json.removeValue('missing$i');
+          }
+          expect(json, {'a': 1});
+
+          // The cache still resolves paths correctly after clearing.
+          json.removeValue('a');
+          expect(json, <String, dynamic>{});
         });
       });
     });

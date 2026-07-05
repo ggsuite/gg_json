@@ -8,6 +8,87 @@ import 'package:gg_json/gg_json.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group('compileJsonPath', () {
+    test('compiles path segments with keys and indices', () {
+      final segments = compileJsonPath('a/b[3][4].c');
+      expect(segments, hasLength(3));
+
+      expect(segments[0].key, 'a');
+      expect(segments[0].indices, isEmpty);
+      expect(segments[0].raw, 'a');
+
+      expect(segments[1].key, 'b');
+      expect(segments[1].indices, [3, 4]);
+      expect(segments[1].raw, 'b[3][4]');
+
+      expect(segments[2].key, 'c');
+      expect(segments[2].indices, isEmpty);
+      expect(segments[2].raw, 'c');
+    });
+
+    test('ignores leading, trailing and duplicate separators', () {
+      expect(compileJsonPath('//a.b/c/').map((s) => s.key), ['a', 'b', 'c']);
+      expect(compileJsonPath(''), isEmpty);
+      expect(compileJsonPath('/'), isEmpty);
+    });
+
+    test('caches compiled paths by the raw path string', () {
+      final first = compileJsonPath('x/y[1]');
+      final second = compileJsonPath('x/y[1]');
+      expect(identical(first, second), isTrue);
+    });
+
+    test('returns unmodifiable structures so the cache cannot be poisoned', () {
+      final segments = compileJsonPath('p/q[2][3]');
+      expect(() => segments.removeLast(), throwsUnsupportedError);
+      expect(() => segments[0].indices.add(1), throwsUnsupportedError);
+      expect(() => segments[1].indices.add(1), throwsUnsupportedError);
+
+      // The path still resolves correctly afterwards.
+      final json = <String, dynamic>{
+        'p': <String, dynamic>{
+          'q': <dynamic>[
+            <dynamic>[],
+            <dynamic>[],
+            <dynamic>[0, 1, 2, 42],
+          ],
+        },
+      };
+      expect(json.get<int>('p/q[2][3]'), 42);
+    });
+
+    test('clears the cache once the entry limit is reached', () {
+      // Compile more distinct paths than the internal cache bound so the
+      // cache clears and refills at least once; it must keep resolving
+      // paths correctly afterwards.
+      for (var i = 0; i < 5000; i++) {
+        final segments = compileJsonPath('p$i/q[$i]');
+        expect(segments[0].key, 'p$i');
+        expect(segments[1].key, 'q');
+        expect(segments[1].indices, [i]);
+      }
+
+      // A path compiled before the clear still resolves correctly when
+      // requested again after the cache has been cleared and refilled.
+      final again = compileJsonPath('p0/q[0]');
+      expect(again[0].key, 'p0');
+      expect(again[1].indices, [0]);
+    });
+
+    test('throws on invalid segments', () {
+      expect(
+        () => compileJsonPath('a/b['),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Invalid path segment "b[".'),
+          ),
+        ),
+      );
+    });
+  });
+
   group('parseJsonPath', () {
     test('splits path into segments', () {
       expect(parseJsonPath('a/b/c'), ['a', 'b', 'c']);
