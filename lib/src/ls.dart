@@ -20,9 +20,9 @@ extension JsonObjectPaths on Json {
     String linePrefix = '',
     WhereProp? where,
   }) {
-    final result = <List<String>>[];
+    final result = <String>[];
     _add(
-      parent: [],
+      parent: '',
       paths: result,
       key: '.',
       val: this,
@@ -35,23 +35,27 @@ extension JsonObjectPaths on Json {
     _jsonLs(
       this,
       result,
-      ['.'],
+      '.',
       writeValues: writeValues,
       alsoComplexValues: alsoComplexValues,
       exclude: exclude,
       where: where,
     );
 
-    return result.map((e) => e.join('/')).map((e) => '$linePrefix$e').toList();
+    if (linePrefix.isEmpty) {
+      return result;
+    }
+    return result.map((e) => '$linePrefix$e').toList();
   }
 }
 
 // ...........................................................................
-/// List all paths in a JSON object
+/// List all paths in a JSON object.
+/// [parent] is the already joined path of the object itself.
 void _jsonLs(
   Map<String, dynamic> json,
-  List<List<String>> paths,
-  List<String> parent, {
+  List<String> paths,
+  String parent, {
   required bool writeValues,
   required bool alsoComplexValues,
   required Pattern? exclude,
@@ -64,7 +68,6 @@ void _jsonLs(
     }
 
     final val = json[key];
-    final child = [...parent, key];
 
     // Handle maps
     if (val is Map<String, dynamic>) {
@@ -81,7 +84,7 @@ void _jsonLs(
       _jsonLs(
         val,
         paths,
-        child,
+        _join(parent, key),
         writeValues: writeValues,
         alsoComplexValues: alsoComplexValues,
         exclude: exclude,
@@ -103,7 +106,6 @@ void _jsonLs(
       _lsList(
         val,
         paths,
-        child,
         writeValues,
         alsoComplexValues,
         exclude,
@@ -130,25 +132,21 @@ void _jsonLs(
 // ...........................................................................
 void _lsList(
   List<dynamic> val,
-  List<List<String>> paths,
-  List<String> child,
+  List<String> paths,
   bool writeValues,
   bool alsoComplexValues,
   Pattern? exclude,
-  List<String> parent,
+  String parent,
   String key,
   WhereProp? where,
 ) {
   for (var i = 0; i < val.length; i++) {
-    final path = [...child];
-    path[path.length - 1] = '$key[$i]';
-
     // Handle map in list
     if (val[i] is Map<String, dynamic>) {
       _jsonLs(
         val[i] as Map<String, dynamic>,
         paths,
-        path,
+        _join(parent, '$key[$i]'),
         writeValues: writeValues,
         alsoComplexValues: alsoComplexValues,
         exclude: exclude,
@@ -160,7 +158,6 @@ void _lsList(
       _lsList(
         val[i] as List<dynamic>,
         paths,
-        path,
         writeValues,
         alsoComplexValues,
         exclude,
@@ -186,15 +183,15 @@ void _lsList(
 
 // ...........................................................................
 void _add({
-  required List<String> parent,
-  required List<List<String>> paths,
+  required String parent,
+  required List<String> paths,
   required String key,
   required dynamic val,
   required WhereProp? where,
   required bool writeValues,
   required bool alsoComplexValues,
 }) {
-  if (where != null && !where(key: key, value: val, path: parent.join('/'))) {
+  if (where != null && !where(key: key, value: val, path: parent)) {
     return;
   }
 
@@ -203,5 +200,9 @@ void _add({
   }
 
   final segment = writeValues ? '$key = $val' : key;
-  paths.add([...parent, segment]);
+  paths.add(_join(parent, segment));
 }
+
+// ...........................................................................
+String _join(String parent, String segment) =>
+    parent.isEmpty ? segment : '$parent/$segment';

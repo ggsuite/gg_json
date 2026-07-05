@@ -48,9 +48,10 @@ class _Set<T> {
   Json get result => _calc(path: segments, json: json);
 
   // ...........................................................................
-  /// Write a value into the json
-  Json _calc({required List<String> path, required Json json}) {
-    if (path.isEmpty) {
+  /// Write a value into the json.
+  /// [start] is the index of the path segment to process in [path].
+  Json _calc({required List<String> path, required Json json, int start = 0}) {
+    if (start >= path.length) {
       assert(value is Json);
       json.clear();
       json.addAll(value as Json);
@@ -58,11 +59,12 @@ class _Set<T> {
     }
 
     // Iterate all keys in the JSON
-    final currentSegment = path.first;
+    final currentSegment = path[start];
     final (segmentName, indices) = parseArrayIndex(currentSegment);
+    final isLastSegment = start == path.length - 1;
 
     // Is the last segment? Set value.
-    if (path.length == 1 && indices.isEmpty) {
+    if (isLastSegment && indices.isEmpty) {
       final existing = json[segmentName];
       _throwWhenMissing(segmentName, existing);
       _checkTypes(segmentName, json[segmentName], value);
@@ -88,9 +90,8 @@ class _Set<T> {
       }
 
       // Process next path segment
-      if (path.length > 1) {
-        final subPath = path.sublist(1);
-        _calc(json: child, path: subPath);
+      if (!isLastSegment) {
+        _calc(json: child, path: path, start: start + 1);
       }
     }
     // Handle arrays
@@ -127,7 +128,7 @@ class _Set<T> {
         parent = child;
 
         if (i == last) {
-          if (path.length == 1) {
+          if (isLastSegment) {
             _checkTypes(segmentName, child[index], value);
             child[index] = value;
             return json;
@@ -142,8 +143,7 @@ class _Set<T> {
       }
 
       // Process next path segment
-      final subPath = path.sublist(1);
-      _calc(json: child as Json, path: subPath);
+      _calc(json: child as Json, path: path, start: start + 1);
     }
 
     return json; // coverage:ignore-line
@@ -184,18 +184,20 @@ T _jsonGet<T>(Json json, String path) =>
     _jsonGetOrNull<T>(json, path, throwWhenNotFound: true) as T;
 
 // .............................................................................
-/// Returns a value from the json by path array
-T? _jsonGetByArrayOrNull<T>(Json json, List<String> path) {
-  if (path.isEmpty) {
+/// Returns a value from the json by path array.
+/// [start] is the index of the path segment to process in [path].
+T? _jsonGetByArrayOrNull<T>(Json json, List<String> path, [int start = 0]) {
+  if (start >= path.length) {
     return json as T?;
   }
 
   // Iterate all keys in the JSON
-  final currentSegment = path.first;
+  final currentSegment = path[start];
   final (segmentName, indices) = parseArrayIndex(currentSegment);
+  final isLastSegment = start == path.length - 1;
 
   // Is the last segment? Return value.
-  if (path.length == 1 && indices.isEmpty) {
+  if (isLastSegment && indices.isEmpty) {
     final existing = json[segmentName];
     if (existing != null && existing is! T) {
       throw Exception(
@@ -223,9 +225,8 @@ T? _jsonGetByArrayOrNull<T>(Json json, List<String> path) {
     }
 
     // Process next path segment
-    if (path.length > 1) {
-      final subPath = path.sublist(1);
-      return _jsonGetByArrayOrNull<T>(child, subPath);
+    if (!isLastSegment) {
+      return _jsonGetByArrayOrNull<T>(child, path, start + 1);
     }
   }
   // Handle arrays
@@ -260,7 +261,7 @@ T? _jsonGetByArrayOrNull<T>(Json json, List<String> path) {
       }
 
       if (i == last) {
-        if (path.length == 1) {
+        if (isLastSegment) {
           return existing as T;
         } else {
           child = existing;
@@ -273,8 +274,7 @@ T? _jsonGetByArrayOrNull<T>(Json json, List<String> path) {
     }
 
     // Process next path segment
-    final subPath = path.sublist(1);
-    return _jsonGetByArrayOrNull<T>(child as Json, subPath);
+    return _jsonGetByArrayOrNull<T>(child as Json, path, start + 1);
   }
 
   return null;
@@ -282,10 +282,10 @@ T? _jsonGetByArrayOrNull<T>(Json json, List<String> path) {
 
 // .............................................................................
 /// Removes a value from the JSON document.
-void _jsonRemoveByArray(Json doc, Iterable<String> path) {
+void _jsonRemoveByArray(Json doc, List<String> path) {
   var node = doc;
   for (int i = 0; i < path.length; i++) {
-    final pathSegment = path.elementAt(i);
+    final pathSegment = path[i];
     if (!node.containsKey(pathSegment)) {
       break;
     }

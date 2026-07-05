@@ -11,11 +11,13 @@ bool deeplEquals(Json a, Json b) {
   if (identical(a, b)) return true;
   if (a.length != b.length) return false;
 
-  for (final key in a.keys) {
-    if (!b.containsKey(key)) return false;
-
-    final va = a[key];
+  for (final entry in a.entries) {
+    final key = entry.key;
+    final va = entry.value;
     final vb = b[key];
+
+    // Only pay for containsKey when the lookup was ambiguous (null value).
+    if (vb == null && !b.containsKey(key)) return false;
 
     if (va is Map<String, dynamic> && vb is Map<String, dynamic>) {
       if (!deeplEquals(va, vb)) return false;

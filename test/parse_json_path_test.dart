@@ -65,6 +65,71 @@ void main() {
 
         expect(message, 'Invalid path segment "data[[1]]".');
       });
+
+      test('empty segment', () {
+        expect(
+          () => parseArrayIndex(''),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Invalid path segment "".'),
+            ),
+          ),
+        );
+      });
+
+      test('closing bracket without opening bracket', () {
+        expect(
+          () => parseArrayIndex('a]b'),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Invalid path segment "a]b".'),
+            ),
+          ),
+        );
+      });
+
+      test('missing key before index', () {
+        expect(
+          () => parseArrayIndex('[0]'),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Invalid path segment "[0]".'),
+            ),
+          ),
+        );
+      });
+
+      test('closing bracket within key', () {
+        expect(
+          () => parseArrayIndex('a]b[0]'),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Invalid path segment "a]b[0]".'),
+            ),
+          ),
+        );
+      });
+
+      test('text after index', () {
+        expect(
+          () => parseArrayIndex('a[0]x'),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Invalid path segment "a[0]x".'),
+            ),
+          ),
+        );
+      });
     });
   });
 }

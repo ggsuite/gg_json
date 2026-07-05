@@ -37,7 +37,8 @@ Json deepCopy(
         where: where,
       );
     } else {
-      if (isJsonValue(value) == false) {
+      // Value is neither Map nor List here, so the simple check suffices.
+      if (isSimpleJsonValue(value) == false) {
         if (throwOnNonJsonObjects) {
           throw ArgumentError.value(
             value,
@@ -85,7 +86,8 @@ List<dynamic> deepCopyList(
         ),
       );
     } else {
-      if (isJsonValue(element) == false) {
+      // Element is neither Map nor List here, so the simple check suffices.
+      if (isSimpleJsonValue(element) == false) {
         if (throwOnNonJsonObjects) {
           throw ArgumentError.value(
             element,

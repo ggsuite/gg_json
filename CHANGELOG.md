@@ -1,5 +1,18 @@
 # Changelog
 
+## \[3.1.2\] - 2026-07-05
+
+### Changed
+
+- Improve performance: path parsing without regular expressions,
+allocation-free path traversal in set/get, faster ls and deepEquals
+
+## [3.2.0] - 2026-07-05
+
+### Changed
+
+- Optimize performance using claude
+
 ## [3.1.1] - 2026-05-20
 
 ### Changed
@@ -151,6 +164,7 @@
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[3.2.0]: https://github.com/inlavigo/gg_json/compare/3.1.1...3.2.0
 [3.1.1]: https://github.com/inlavigo/gg_json/compare/3.1.0...3.1.1
 [3.1.0]: https://github.com/inlavigo/gg_json/compare/3.0.20...3.1.0
 [3.0.20]: https://github.com/inlavigo/gg_json/compare/3.0.19...3.0.20

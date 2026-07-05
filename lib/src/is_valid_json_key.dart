@@ -4,11 +4,10 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+final _identifierRegExp = RegExp(r'^(?:[A-Za-z_$][A-Za-z0-9_$]*)$');
+
 /// Returns true if the given [input] string is a valid Dart identifier.
-bool isValidJsonKey(String input) {
-  final identifierRegExp = RegExp(r'^(?:[A-Za-z_$][A-Za-z0-9_$]*)$');
-  return identifierRegExp.hasMatch(input);
-}
+bool isValidJsonKey(String input) => _identifierRegExp.hasMatch(input);
 
 /// Throws an [ArgumentError] if the given [key] is not a valid Dart identifier.
 void throwIfNotValidJsonKey(String key) {

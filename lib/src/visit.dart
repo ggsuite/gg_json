@@ -39,7 +39,7 @@ void _visit(dynamic node, List<dynamic> ancestors, VisitProp callback) {
   if (node is Map<String, dynamic>) {
     // Snapshot keys so the callback may add, remove or rename entries on
     // [node] without triggering ConcurrentModificationError.
-    for (final key in [...node.keys]) {
+    for (final key in node.keys.toList(growable: false)) {
       if (!node.containsKey(key)) continue;
       final value = node[key];
       callback(key: key, value: value, parent: node, ancestors: ancestors);
