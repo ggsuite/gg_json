@@ -37,6 +37,8 @@ previously have failed earlier with a missing-path error or returned null
 - Improve performance: path parsing without regular expressions,
 allocation-free path traversal in set/get, faster ls and deepEquals
 
+## [4.0.1] - 2026-07-06
+
 ## [4.0.0] - 2026-07-06
 
 ### Changed
@@ -200,6 +202,7 @@ allocation-free path traversal in set/get, faster ls and deepEquals
 - Add `DeepCopy(json)`
 - Add deepCopy, deepEquals and isJson and json
 
+[4.0.1]: https://github.com/inlavigo/gg_json/compare/4.0.0...4.0.1
 [4.0.0]: https://github.com/inlavigo/gg_json/compare/3.2.0...4.0.0
 [3.2.0]: https://github.com/inlavigo/gg_json/compare/3.1.1...3.2.0
 [3.1.1]: https://github.com/inlavigo/gg_json/compare/3.1.0...3.1.1
