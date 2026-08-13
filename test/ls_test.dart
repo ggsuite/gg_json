@@ -1,5 +1,5 @@
 // @license
-// Copyright (c) 2019 - 2024 Dr. Gabriel Gatzsche. All Rights Reserved.
+// Copyright (c) ggsuite
 //
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
@@ -304,9 +304,8 @@ void main() {
         });
 
         test('handles list indices with more than one digit', () {
-          final paths = {
-            'l': List<dynamic>.generate(12, (i) => i),
-          }.ls(writeValues: true);
+          final paths = {'l': List<dynamic>.generate(12, (i) => i)}
+              .ls(writeValues: true);
           expect(paths, contains('./l[10] = 10'));
           expect(paths, contains('./l[11] = 11'));
         });
