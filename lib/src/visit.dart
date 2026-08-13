@@ -1,5 +1,5 @@
 // @license
-// Copyright (c) 2026 ggsuite
+// Copyright (c) ggsuite
 //
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
@@ -15,13 +15,12 @@ import 'package:gg_json/gg_json.dart';
 /// - [value] is the entry's value.
 /// - [parent] is the immediate container of the entry (a [Map] or [List]).
 /// - [ancestors] starts with [parent] and continues up to the root document.
-typedef VisitProp =
-    void Function(
-      dynamic key,
-      dynamic value,
-      dynamic parent,
-      List<dynamic> ancestors,
-    );
+typedef VisitProp = void Function(
+  dynamic key,
+  dynamic value,
+  dynamic parent,
+  List<dynamic> ancestors,
+);
 
 /// Visits every entry in a JSON document.
 extension JsonVisit on Json {
