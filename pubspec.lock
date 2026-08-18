@@ -100,10 +100,9 @@ packages:
   gg_test_matchers:
     dependency: "direct dev"
     description:
-      name: gg_test_matchers
-      sha256: "9a97cf2ec34104ecdd835e417902fdc00c1c82678a080948f130b514e54d3c18"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../gg_test_matchers"
+      relative: true
+    source: path
     version: "1.2.0"
   glob:
     dependency: transitive
