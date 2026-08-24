@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+- `jsonMergePatch`, `joinArrays` and `encodeJsonPretty` — RFC-7386-style
+merging with per-field control (`key!` replaces, `key+` joins arrays),
+moved here from helix
+- Add json merge from helix
+
 ### Changed
 
 - Use ggwsm in pipelines
