@@ -9,4 +9,4 @@
 // coverage:ignore-file
 
 /// The version of the `gg_json` package.
-const String ggJsonVersion = '4.2.0';
+const String ggJsonVersion = '4.3.0';
